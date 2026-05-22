@@ -1,0 +1,14 @@
+.next/
+coverage/
+dist/
+node_modules/
+.env
+.env*.local
+.qa-*.png
+.vercel/
+*.html
+sitemap.xml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+tsconfig.tsbuildinfo

@@ -1,0 +1,7 @@
+.next/
+coverage/
+dist/
+node_modules/
+next-env.d.ts
+*.html
+sitemap.xml
