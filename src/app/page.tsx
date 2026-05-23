@@ -1,8 +1,8 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { ProductCard } from '@/components/product-card';
 import {
-  getAvailableProducts,
   getCategorySummaries,
   getFeaturedProducts,
   getProducts,
@@ -12,14 +12,19 @@ import { formatMoney } from '@/lib/money';
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [products, availableProducts, featuredProducts, categorySummaries] =
-    await Promise.all([
-      getProducts(),
-      getAvailableProducts(),
-      getFeaturedProducts(8),
-      getCategorySummaries(),
-    ]);
+  const [products, featuredProducts, categorySummaries] = await Promise.all([
+    getProducts(),
+    getFeaturedProducts(8),
+    getCategorySummaries(),
+  ]);
   const categories = categorySummaries.slice(0, 8);
+  const bannerProducts = featuredProducts
+    .flatMap((product) => {
+      const imageUrl = product.imageUrls[0];
+
+      return imageUrl ? [{ imageUrl, product }] : [];
+    })
+    .slice(0, 5);
   const minimumPrice = Math.min(
     ...products
       .map((product) => product.priceCents)
@@ -28,49 +33,70 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Catalogo independente no ar</p>
-          <h1>Perfume bom nao espera plataforma resolver boleto.</h1>
-          <p>
-            A Conexao segue vendendo: escolha seu produto, monte o carrinho e
-            finalize direto no WhatsApp com confirmacao humana de estoque, frete
-            e PIX.
-          </p>
-          <div className="hero-actions">
-            <Link className="button" href="/produtos">
-              Comprar agora
-            </Link>
-            <a
-              className="button ghost"
-              href="https://wa.me/555521981024555"
-              target="_blank"
-            >
-              Chamar a loja
-            </a>
-          </div>
+      <section className="promo-hero" aria-label="Campanha principal">
+        <button
+          className="promo-arrow left"
+          type="button"
+          aria-label="Anterior"
+        >
+          ‹
+        </button>
+        <div className="promo-copy">
+          <span>Conexao Perfumaria</span>
+          <strong>
+            promo
+            <small>[especial]</small>
+          </strong>
+          <p>fragrancias com atendimento direto</p>
+          <Link className="promo-search" href="/produtos">
+            catalogo completo
+          </Link>
         </div>
-        <div className="hero-panel" aria-label="Resumo do catalogo">
-          <div className="orbital-card">
-            <span>Operacao</span>
-            <strong>anti-bloqueio</strong>
-          </div>
-          <div className="hero-metric">
-            <span>Produtos importados</span>
-            <strong>{products.length}</strong>
-          </div>
-          <div className="hero-metric">
-            <span>Pronta entrega</span>
-            <strong>{availableProducts.length}</strong>
-          </div>
-          <div className="hero-metric">
-            <span>A partir de</span>
+        <div className="promo-stage" aria-label="Produtos em destaque">
+          <div className="promo-price">
+            <span>a partir de:</span>
             <strong>
               {Number.isFinite(minimumPrice)
                 ? formatMoney(minimumPrice)
-                : 'R$0,00'}
+                : 'consultar'}
             </strong>
+            <small>PIX e frete confirmados no WhatsApp</small>
           </div>
+          <div className="promo-products">
+            {bannerProducts.length > 0 ? (
+              bannerProducts.map(({ imageUrl, product }) => (
+                <Link
+                  className="promo-product"
+                  href={`/produtos/${product.slug}`}
+                  key={product.slug}
+                >
+                  <Image
+                    alt={product.name}
+                    height={320}
+                    src={imageUrl}
+                    width={240}
+                  />
+                </Link>
+              ))
+            ) : (
+              <div className="promo-product-empty">
+                <span>Conexao</span>
+                <strong>catalogo</strong>
+              </div>
+            )}
+          </div>
+        </div>
+        <button
+          className="promo-arrow right"
+          type="button"
+          aria-label="Proximo"
+        >
+          ›
+        </button>
+        <div className="promo-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
         </div>
       </section>
 
