@@ -17,7 +17,6 @@ interface AddCartItemInput {
   readonly productName: string;
   readonly variantId: number;
   readonly variantLabel: string;
-  readonly unitPriceCents: number;
   readonly imageUrl: string | null;
 }
 

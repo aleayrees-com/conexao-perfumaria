@@ -2,16 +2,31 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { useCart } from '@/components/cart-provider';
-import { buildWhatsAppUrl, getCartTotal } from '@/lib/checkout';
-import { publicEnv } from '@/lib/env';
-import { formatMoney } from '@/lib/money';
+import { createWhatsAppCheckout } from '@/lib/checkout-request';
 
 export function CheckoutClient() {
   const { clearCart, items, updateQuantity } = useCart();
-  const total = getCartTotal(items);
-  const whatsappUrl = buildWhatsAppUrl(publicEnv.whatsappNumber, items);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function openWhatsAppCheckout(): Promise<void> {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const { whatsappUrl } = await createWhatsAppCheckout(items);
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      setErrorMessage(
+        'Nao consegui recalcular o pedido no Supabase. Tenta de novo em instantes.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -55,7 +70,7 @@ export function CheckoutClient() {
               <div>
                 <h2>{item.productName}</h2>
                 <p>{item.variantLabel}</p>
-                <span>{formatMoney(item.unitPriceCents)}</span>
+                <span>Preco recalculado pelo Supabase no envio</span>
               </div>
               <input
                 aria-label={`Quantidade de ${item.productName}`}
@@ -74,14 +89,21 @@ export function CheckoutClient() {
         </div>
 
         <div className="checkout-total">
-          <span>Total estimado</span>
-          <strong>{formatMoney(total)}</strong>
+          <span>Total oficial</span>
+          <strong>Calculado no servidor</strong>
         </div>
 
+        {errorMessage ? <p className="checkout-error">{errorMessage}</p> : null}
+
         <div className="checkout-actions">
-          <a className="button" href={whatsappUrl} target="_blank">
-            Enviar pedido no WhatsApp
-          </a>
+          <button
+            className="button"
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => void openWhatsAppCheckout()}
+          >
+            {isSubmitting ? 'Recalculando...' : 'Enviar pedido no WhatsApp'}
+          </button>
           <button className="button ghost" type="button" onClick={clearCart}>
             Limpar carrinho
           </button>

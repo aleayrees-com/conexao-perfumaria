@@ -3,18 +3,33 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { useCart } from '@/components/cart-provider';
-import { buildWhatsAppUrl, getCartTotal } from '@/lib/checkout';
-import { publicEnv } from '@/lib/env';
-import { formatMoney } from '@/lib/money';
+import { createWhatsAppCheckout } from '@/lib/checkout-request';
 
 export function CartDrawer() {
   const router = useRouter();
   const { clearCart, closeCart, isOpen, items, removeItem, updateQuantity } =
     useCart();
-  const total = getCartTotal(items);
-  const whatsappUrl = buildWhatsAppUrl(publicEnv.whatsappNumber, items);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function openWhatsAppCheckout(): Promise<void> {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const { whatsappUrl } = await createWhatsAppCheckout(items);
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      setErrorMessage(
+        'Nao consegui recalcular o pedido no Supabase. Revise no checkout.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   if (!isOpen) {
     return null;
@@ -65,7 +80,7 @@ export function CartDrawer() {
                   <div>
                     <h3>{item.productName}</h3>
                     <p>{item.variantLabel}</p>
-                    <strong>{formatMoney(item.unitPriceCents)}</strong>
+                    <strong>Preco confirmado no servidor</strong>
                     <div className="quantity-control">
                       <button
                         type="button"
@@ -99,12 +114,20 @@ export function CartDrawer() {
 
             <div className="drawer-footer">
               <div className="cart-total">
-                <span>Total estimado</span>
-                <strong>{formatMoney(total)}</strong>
+                <span>Total oficial</span>
+                <strong>Supabase no envio</strong>
               </div>
-              <a className="button full" href={whatsappUrl} target="_blank">
-                Fechar no WhatsApp
-              </a>
+              {errorMessage ? (
+                <p className="checkout-error">{errorMessage}</p>
+              ) : null}
+              <button
+                className="button full"
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => void openWhatsAppCheckout()}
+              >
+                {isSubmitting ? 'Recalculando...' : 'Fechar no WhatsApp'}
+              </button>
               <button
                 className="button ghost full"
                 type="button"

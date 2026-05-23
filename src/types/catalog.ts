@@ -46,7 +46,6 @@ export interface CartItem {
   readonly productName: string;
   readonly variantId: number;
   readonly variantLabel: string;
-  readonly unitPriceCents: number;
   readonly imageUrl: string | null;
   readonly quantity: number;
 }

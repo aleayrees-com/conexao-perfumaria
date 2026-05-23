@@ -1,14 +1,22 @@
-import type { CartItem } from '@/types/catalog';
 import { formatMoney } from '@/lib/money';
 
-export function getCartTotal(items: readonly CartItem[]): number {
+export interface CheckoutQuoteItem {
+  readonly productName: string;
+  readonly variantLabel: string;
+  readonly unitPriceCents: number;
+  readonly quantity: number;
+}
+
+export function getCartTotal(items: readonly CheckoutQuoteItem[]): number {
   return items.reduce(
     (total, item) => total + item.unitPriceCents * item.quantity,
     0,
   );
 }
 
-export function buildWhatsAppOrderMessage(items: readonly CartItem[]): string {
+export function buildWhatsAppOrderMessage(
+  items: readonly CheckoutQuoteItem[],
+): string {
   const lines = items.flatMap((item, index) => [
     `${index + 1}. ${item.productName}`,
     `Variacao: ${item.variantLabel}`,
@@ -24,12 +32,14 @@ export function buildWhatsAppOrderMessage(items: readonly CartItem[]): string {
     `Total estimado: ${formatMoney(getCartTotal(items))}`,
     '',
     'Pode confirmar estoque, frete e PIX pra mim?',
+    '',
+    'Obs.: valores recalculados pelo catalogo oficial da loja no momento do envio.',
   ].join('\n');
 }
 
 export function buildWhatsAppUrl(
   whatsappNumber: string,
-  items: readonly CartItem[],
+  items: readonly CheckoutQuoteItem[],
 ): string {
   const message = encodeURIComponent(buildWhatsAppOrderMessage(items));
 

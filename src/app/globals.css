@@ -270,6 +270,12 @@ h2 {
   box-shadow: 0 14px 28px rgba(55, 13, 82, 0.18);
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+}
+
 .button.ghost {
   background: rgba(255, 253, 248, 0.08);
   color: var(--paper-strong);
@@ -797,7 +803,15 @@ h2 {
 .checkout-total strong {
   color: var(--ink);
   font-family: var(--font-display), serif;
-  font-size: 2rem;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  line-height: 1;
+  text-align: right;
+}
+
+.checkout-error {
+  margin: 0;
+  color: #b42318;
+  font-weight: 800;
 }
 
 .product-page {

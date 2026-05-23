@@ -69,7 +69,6 @@ export function ProductPurchasePanel({
               productName: product.name,
               variantId: selectedVariant.id,
               variantLabel: selectedVariant.label,
-              unitPriceCents: selectedVariant.priceCents,
               imageUrl:
                 selectedVariant.imageUrl ?? product.imageUrls[0] ?? null,
             },

@@ -140,6 +140,12 @@ function createCatalogClient(env: SupabaseCatalogEnv): CatalogSupabaseClient {
   });
 }
 
+function shouldRequireSupabaseCatalog(): boolean {
+  return (
+    process.env.VERCEL === '1' || process.env.CATALOG_SOURCE === 'supabase'
+  );
+}
+
 function toInteger(value: DbInteger, field: string): number {
   const numberValue =
     typeof value === 'number' ? value : Number.parseInt(value, 10);
@@ -343,14 +349,23 @@ async function fetchSupabaseProducts(
 
 async function readProducts(): Promise<readonly Product[]> {
   const env = readSupabaseCatalogEnv();
+  const requireSupabaseCatalog = shouldRequireSupabaseCatalog();
 
   if (!env) {
+    if (requireSupabaseCatalog) {
+      throw new Error('Supabase obrigatorio para carregar catalogo.');
+    }
+
     return fallbackProducts;
   }
 
   try {
     return await fetchSupabaseProducts(createCatalogClient(env));
   } catch (error: unknown) {
+    if (requireSupabaseCatalog) {
+      throw error;
+    }
+
     const message =
       error instanceof Error ? error.message : 'erro desconhecido';
     console.warn(
@@ -362,6 +377,16 @@ async function readProducts(): Promise<readonly Product[]> {
 }
 
 export const getProducts = cache(readProducts);
+
+export async function getSupabaseProductsStrict(): Promise<readonly Product[]> {
+  const env = readSupabaseCatalogEnv();
+
+  if (!env) {
+    throw new Error('Supabase obrigatorio para fechar pedido.');
+  }
+
+  return fetchSupabaseProducts(createCatalogClient(env));
+}
 
 export async function getAvailableProducts(): Promise<readonly Product[]> {
   return (await getProducts()).filter((product) => product.available);
