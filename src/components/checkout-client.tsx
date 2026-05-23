@@ -21,7 +21,7 @@ export function CheckoutClient() {
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     } catch {
       setErrorMessage(
-        'Nao consegui recalcular o pedido no Supabase. Tenta de novo em instantes.',
+        'Nao consegui confirmar o pedido agora. Tenta de novo em instantes.',
       );
     } finally {
       setIsSubmitting(false);
@@ -70,7 +70,7 @@ export function CheckoutClient() {
               <div>
                 <h2>{item.productName}</h2>
                 <p>{item.variantLabel}</p>
-                <span>Preco recalculado pelo Supabase no envio</span>
+                <span>Preco conferido no fechamento</span>
               </div>
               <input
                 aria-label={`Quantidade de ${item.productName}`}
@@ -90,7 +90,7 @@ export function CheckoutClient() {
 
         <div className="checkout-total">
           <span>Total oficial</span>
-          <strong>Calculado no servidor</strong>
+          <strong>No fechamento</strong>
         </div>
 
         {errorMessage ? <p className="checkout-error">{errorMessage}</p> : null}

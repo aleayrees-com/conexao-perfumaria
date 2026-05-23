@@ -8,15 +8,20 @@ import type { CategorySummary, Product } from '@/types/catalog';
 
 export function CatalogClient({
   categories,
+  initialOnlyAvailable = false,
+  initialSearchTerm = '',
   products,
 }: {
   readonly categories: readonly CategorySummary[];
+  readonly initialOnlyAvailable?: boolean;
+  readonly initialSearchTerm?: string;
   readonly products: readonly Product[];
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] =
+    useState(initialSearchTerm);
   const [categorySlug, setCategorySlug] = useState('todos');
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [onlyAvailable, setOnlyAvailable] = useState(initialOnlyAvailable);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {

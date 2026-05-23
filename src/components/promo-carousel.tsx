@@ -1,0 +1,131 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+
+export interface PromoSlideProduct {
+  readonly imageUrl: string;
+  readonly name: string;
+  readonly slug: string;
+}
+
+export interface PromoSlide {
+  readonly id: string;
+  readonly kicker: string;
+  readonly title: string;
+  readonly bracket: string;
+  readonly tagline: string;
+  readonly searchLabel: string;
+  readonly searchHref: string;
+  readonly priceLabel: string;
+  readonly priceDetail: string;
+  readonly products: readonly PromoSlideProduct[];
+}
+
+export function PromoCarousel({
+  slides,
+}: {
+  readonly slides: readonly PromoSlide[];
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeSlide = slides[activeIndex] ?? slides[0];
+
+  if (!activeSlide) {
+    return null;
+  }
+
+  function move(offset: number): void {
+    setActiveIndex((currentIndex) =>
+      slides.length === 0
+        ? 0
+        : (currentIndex + offset + slides.length) % slides.length,
+    );
+  }
+
+  return (
+    <section className="promo-hero" aria-label="Campanha principal">
+      <div
+        className="promo-slider"
+        style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+      >
+        {slides.map((slide, index) => (
+          <article
+            aria-hidden={index !== activeIndex}
+            className="promo-slide"
+            key={slide.id}
+          >
+            <div className="promo-copy" aria-live="polite">
+              <span>{slide.kicker}</span>
+              <strong>
+                {slide.title}
+                <small>[{slide.bracket}]</small>
+              </strong>
+              <p>{slide.tagline}</p>
+              <Link className="promo-search" href={slide.searchHref}>
+                {slide.searchLabel}
+              </Link>
+            </div>
+            <div className="promo-stage" aria-label="Produtos em destaque">
+              <div className="promo-price">
+                <span>a partir de:</span>
+                <strong>{slide.priceLabel}</strong>
+                <small>{slide.priceDetail}</small>
+              </div>
+              <div className="promo-products">
+                {slide.products.length > 0 ? (
+                  slide.products.map((product) => (
+                    <Link
+                      className="promo-product"
+                      href={`/produtos/${product.slug}`}
+                      key={product.slug}
+                    >
+                      <Image
+                        alt={product.name}
+                        height={320}
+                        src={product.imageUrl}
+                        width={240}
+                      />
+                    </Link>
+                  ))
+                ) : (
+                  <div className="promo-product-empty">
+                    <span>Conexao</span>
+                    <strong>catalogo</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <button
+        className="promo-arrow left"
+        type="button"
+        aria-label="Banner anterior"
+        onClick={() => move(-1)}
+      >
+        ‹
+      </button>
+      <button
+        className="promo-arrow right"
+        type="button"
+        aria-label="Proximo banner"
+        onClick={() => move(1)}
+      >
+        ›
+      </button>
+      <div className="promo-dots" aria-label="Escolher banner">
+        {slides.map((slide, index) => (
+          <button
+            aria-label={`Mostrar banner ${index + 1}: ${slide.bracket}`}
+            aria-pressed={index === activeIndex}
+            key={slide.id}
+            type="button"
+            onClick={() => setActiveIndex(index)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}

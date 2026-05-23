@@ -24,7 +24,7 @@ export function CartDrawer() {
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     } catch {
       setErrorMessage(
-        'Nao consegui recalcular o pedido no Supabase. Revise no checkout.',
+        'Nao consegui confirmar o pedido agora. Revise no checkout.',
       );
     } finally {
       setIsSubmitting(false);
@@ -80,7 +80,7 @@ export function CartDrawer() {
                   <div>
                     <h3>{item.productName}</h3>
                     <p>{item.variantLabel}</p>
-                    <strong>Preco confirmado no servidor</strong>
+                    <strong>Preco conferido no fechamento</strong>
                     <div className="quantity-control">
                       <button
                         type="button"
@@ -115,7 +115,7 @@ export function CartDrawer() {
             <div className="drawer-footer">
               <div className="cart-total">
                 <span>Total oficial</span>
-                <strong>Supabase no envio</strong>
+                <strong>No fechamento</strong>
               </div>
               {errorMessage ? (
                 <p className="checkout-error">{errorMessage}</p>

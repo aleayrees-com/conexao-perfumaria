@@ -9,7 +9,17 @@ export const metadata = {
 
 export const revalidate = 60;
 
-export default async function ProductsPage() {
+interface ProductsPageProps {
+  readonly searchParams?: Promise<{
+    readonly busca?: string;
+    readonly disponivel?: string;
+  }>;
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
+  const resolvedSearchParams = await searchParams;
   const [categories, products] = await Promise.all([
     getCategorySummaries(),
     getProducts(),
@@ -25,7 +35,12 @@ export default async function ProductsPage() {
           vender sem depender do checkout antigo.
         </p>
       </div>
-      <CatalogClient categories={categories} products={products} />
+      <CatalogClient
+        categories={categories}
+        initialOnlyAvailable={resolvedSearchParams?.disponivel === '1'}
+        initialSearchTerm={resolvedSearchParams?.busca ?? ''}
+        products={products}
+      />
     </section>
   );
 }

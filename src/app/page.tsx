@@ -1,15 +1,130 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { ProductCard } from '@/components/product-card';
+import { PromoCarousel, type PromoSlide } from '@/components/promo-carousel';
 import {
   getCategorySummaries,
   getFeaturedProducts,
   getProducts,
 } from '@/lib/catalog';
 import { formatMoney } from '@/lib/money';
+import type { Product } from '@/types/catalog';
 
 export const revalidate = 60;
+
+function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function productMatchesTerms(
+  product: Product,
+  terms: readonly string[],
+): boolean {
+  const searchable = normalizeText(
+    [
+      product.name,
+      product.description,
+      product.category?.name ?? '',
+      product.category?.slug ?? '',
+    ].join(' '),
+  );
+
+  return terms.some((term) => searchable.includes(normalizeText(term)));
+}
+
+function pickBannerProducts({
+  fallbackProducts,
+  products,
+  terms,
+}: {
+  readonly fallbackProducts: readonly Product[];
+  readonly products: readonly Product[];
+  readonly terms: readonly string[];
+}): readonly Product[] {
+  const matchedProducts = products.filter(
+    (product) => product.imageUrls[0] && productMatchesTerms(product, terms),
+  );
+  const baseProducts =
+    matchedProducts.length > 0 ? matchedProducts : fallbackProducts;
+
+  return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 5);
+}
+
+function getMinimumPrice(products: readonly Product[]): number | null {
+  const prices = products
+    .map((product) => product.priceCents)
+    .filter((price) => price > 0);
+
+  return prices.length > 0 ? Math.min(...prices) : null;
+}
+
+function toPromoSlideProduct(product: Product) {
+  return {
+    imageUrl: product.imageUrls[0] ?? '',
+    name: product.name,
+    slug: product.slug,
+  };
+}
+
+function buildPromoSlides(
+  products: readonly Product[],
+  featuredProducts: readonly Product[],
+): readonly PromoSlide[] {
+  const fallbackProducts = featuredProducts.filter(
+    (product) => product.imageUrls[0],
+  );
+  const slideInputs = [
+    {
+      id: 'perfumaria',
+      bracket: 'perfumaria',
+      tagline: 'descontos exclusivos na categoria',
+      searchLabel: 'perfumaria',
+      searchHref: '/produtos?busca=perfume',
+      terms: ['perfume', 'perfumaria', 'parfum', 'arabes', 'arabe'],
+    },
+    {
+      id: 'body-splash',
+      bracket: 'body splash',
+      tagline: 'leve, borrife e venda no WhatsApp',
+      searchLabel: 'body splashes',
+      searchHref: '/produtos?busca=body%20splash',
+      terms: ['body splash', 'splash', 'dream brand'],
+    },
+    {
+      id: 'kits',
+      bracket: 'kits especiais',
+      tagline: 'combos prontos para presente',
+      searchLabel: 'kits e combos',
+      searchHref: '/produtos?busca=kit',
+      terms: ['kit', 'combo', 'hidratante', 'presente'],
+    },
+  ] as const;
+
+  return slideInputs.map((slideInput) => {
+    const slideProducts = pickBannerProducts({
+      fallbackProducts,
+      products,
+      terms: slideInput.terms,
+    });
+    const minimumPrice = getMinimumPrice(slideProducts);
+
+    return {
+      id: slideInput.id,
+      kicker: 'Conexao Perfumaria',
+      title: 'promo',
+      bracket: slideInput.bracket,
+      tagline: slideInput.tagline,
+      searchLabel: slideInput.searchLabel,
+      searchHref: slideInput.searchHref,
+      priceLabel: minimumPrice ? formatMoney(minimumPrice) : 'consultar',
+      priceDetail: 'PIX, estoque e frete confirmados no WhatsApp',
+      products: slideProducts.map(toPromoSlideProduct),
+    };
+  });
+}
 
 export default async function HomePage() {
   const [products, featuredProducts, categorySummaries] = await Promise.all([
@@ -18,87 +133,11 @@ export default async function HomePage() {
     getCategorySummaries(),
   ]);
   const categories = categorySummaries.slice(0, 8);
-  const bannerProducts = featuredProducts
-    .flatMap((product) => {
-      const imageUrl = product.imageUrls[0];
-
-      return imageUrl ? [{ imageUrl, product }] : [];
-    })
-    .slice(0, 5);
-  const minimumPrice = Math.min(
-    ...products
-      .map((product) => product.priceCents)
-      .filter((price) => price > 0),
-  );
+  const promoSlides = buildPromoSlides(products, featuredProducts);
 
   return (
     <>
-      <section className="promo-hero" aria-label="Campanha principal">
-        <button
-          className="promo-arrow left"
-          type="button"
-          aria-label="Anterior"
-        >
-          ‹
-        </button>
-        <div className="promo-copy">
-          <span>Conexao Perfumaria</span>
-          <strong>
-            promo
-            <small>[especial]</small>
-          </strong>
-          <p>fragrancias com atendimento direto</p>
-          <Link className="promo-search" href="/produtos">
-            catalogo completo
-          </Link>
-        </div>
-        <div className="promo-stage" aria-label="Produtos em destaque">
-          <div className="promo-price">
-            <span>a partir de:</span>
-            <strong>
-              {Number.isFinite(minimumPrice)
-                ? formatMoney(minimumPrice)
-                : 'consultar'}
-            </strong>
-            <small>PIX e frete confirmados no WhatsApp</small>
-          </div>
-          <div className="promo-products">
-            {bannerProducts.length > 0 ? (
-              bannerProducts.map(({ imageUrl, product }) => (
-                <Link
-                  className="promo-product"
-                  href={`/produtos/${product.slug}`}
-                  key={product.slug}
-                >
-                  <Image
-                    alt={product.name}
-                    height={320}
-                    src={imageUrl}
-                    width={240}
-                  />
-                </Link>
-              ))
-            ) : (
-              <div className="promo-product-empty">
-                <span>Conexao</span>
-                <strong>catalogo</strong>
-              </div>
-            )}
-          </div>
-        </div>
-        <button
-          className="promo-arrow right"
-          type="button"
-          aria-label="Proximo"
-        >
-          ›
-        </button>
-        <div className="promo-dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-      </section>
+      <PromoCarousel slides={promoSlides} />
 
       <section className="promise-strip" aria-label="Vantagens">
         <article>
