@@ -692,6 +692,7 @@ h2 {
   border: 1px solid var(--card-line);
   border-radius: 28px;
   background: var(--paper-strong);
+  color: var(--ink);
   box-shadow: var(--shadow);
   animation: drawer-in 240ms ease both;
 }
@@ -748,6 +749,7 @@ h2 {
 .checkout-line h2 {
   margin-bottom: 4px;
   font-family: var(--font-sans), sans-serif;
+  color: var(--ink);
   font-size: 0.96rem;
   letter-spacing: 0;
   line-height: 1.25;
@@ -757,6 +759,15 @@ h2 {
 .checkout-line p {
   margin: 0 0 6px;
   color: var(--ink-soft);
+}
+
+.cart-line strong,
+.checkout-line span {
+  display: block;
+  color: var(--wine);
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.35;
 }
 
 .quantity-control {
@@ -773,11 +784,13 @@ h2 {
   height: 32px;
   border: 0;
   background: var(--paper);
+  color: var(--violet-deep);
   font-weight: 900;
 }
 
 .quantity-control span {
   min-width: 36px;
+  color: var(--ink);
   text-align: center;
   font-weight: 900;
 }
@@ -812,6 +825,13 @@ h2 {
   margin: 0;
   color: #b42318;
   font-weight: 800;
+}
+
+.drawer-footer .button.ghost,
+.empty-state .button.ghost {
+  border-color: rgba(91, 19, 127, 0.32);
+  background: transparent;
+  color: var(--wine);
 }
 
 .product-page {
