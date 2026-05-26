@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { ProductCard } from '@/components/product-card';
 import { PromoCarousel, type PromoSlide } from '@/components/promo-carousel';
+import { SectionHeading, StoreSection } from '@/components/store-layout';
 import {
   getCategorySummaries,
   getFeaturedProducts,
@@ -50,7 +51,7 @@ function pickBannerProducts({
   const baseProducts =
     matchedProducts.length > 0 ? matchedProducts : fallbackProducts;
 
-  return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 5);
+  return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 2);
 }
 
 function getMinimumPrice(products: readonly Product[]): number | null {
@@ -80,24 +81,28 @@ function buildPromoSlides(
     {
       id: 'perfumaria',
       bracket: 'perfumaria',
-      tagline: 'descontos exclusivos na categoria',
-      searchLabel: 'perfumaria',
+      title: 'perfume de presenca',
+      tagline: 'fragrancias marcantes, escolhidas para voce acertar sem duvida',
+      searchLabel: 'comprar agora',
       searchHref: '/produtos?busca=perfume',
       terms: ['perfume', 'perfumaria', 'parfum', 'arabes', 'arabe'],
     },
     {
       id: 'body-splash',
       bracket: 'body splash',
-      tagline: 'leve, borrife e venda no WhatsApp',
-      searchLabel: 'body splashes',
+      title: 'cheiro bom todo dia',
+      tagline:
+        'body splash, hidratantes e combinacoes para uma rotina perfumada',
+      searchLabel: 'ver favoritos',
       searchHref: '/produtos?busca=body%20splash',
       terms: ['body splash', 'splash', 'dream brand'],
     },
     {
       id: 'kits',
       bracket: 'kits especiais',
-      tagline: 'combos prontos para presente',
-      searchLabel: 'kits e combos',
+      title: 'presente sem erro',
+      tagline: 'kits elegantes para impressionar com pronta entrega',
+      searchLabel: 'escolher kit',
       searchHref: '/produtos?busca=kit',
       terms: ['kit', 'combo', 'hidratante', 'presente'],
     },
@@ -114,13 +119,13 @@ function buildPromoSlides(
     return {
       id: slideInput.id,
       kicker: 'Conexao Perfumaria',
-      title: 'promo',
+      title: slideInput.title,
       bracket: slideInput.bracket,
       tagline: slideInput.tagline,
       searchLabel: slideInput.searchLabel,
       searchHref: slideInput.searchHref,
       priceLabel: minimumPrice ? formatMoney(minimumPrice) : 'consultar',
-      priceDetail: 'PIX, estoque e frete confirmados no WhatsApp',
+      priceDetail: 'Atendimento confirma estoque, frete e pagamento',
       products: slideProducts.map(toPromoSlideProduct),
     };
   });
@@ -129,7 +134,7 @@ function buildPromoSlides(
 export default async function HomePage() {
   const [products, featuredProducts, categorySummaries] = await Promise.all([
     getProducts(),
-    getFeaturedProducts(8),
+    getFeaturedProducts(16),
     getCategorySummaries(),
   ]);
   const categories = categorySummaries.slice(0, 8);
@@ -142,43 +147,43 @@ export default async function HomePage() {
       <section className="promise-strip" aria-label="Vantagens">
         <article>
           <span>01</span>
-          <strong>Pedido sem checkout travado</strong>
-          <p>O WhatsApp vira caixa rapido enquanto o gateway novo nao entra.</p>
+          <strong>Escolha com seguranca</strong>
+          <p>
+            A equipe ajuda a encontrar a fragrancia certa para voce ou presente.
+          </p>
         </article>
         <article>
           <span>02</span>
-          <strong>Catalogo puxado da loja atual</strong>
-          <p>
-            Produtos, imagens, precos e estoque vieram do Nuvemshop publico.
-          </p>
+          <strong>Pronta entrega real</strong>
+          <p>Produtos selecionados para sair rapido, sem esperar semanas.</p>
         </article>
         <article>
           <span>03</span>
-          <strong>Compra com confirmacao humana</strong>
-          <p>
-            Menos friccao, mais conversa, sem esconder o que esta acontecendo.
-          </p>
+          <strong>Compra assistida</strong>
+          <p>Voce confirma tudo no WhatsApp antes de finalizar o pagamento.</p>
         </article>
       </section>
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">Curadoria quente</p>
-          <h2>Produtos para voltar a girar hoje</h2>
-          <Link href="/produtos">Ver tudo</Link>
-        </div>
+      <StoreSection variant="featured">
+        <SectionHeading
+          actionHref="/produtos"
+          actionLabel="Ver tudo"
+          eyebrow="16 favoritos da semana"
+          title="queridinhos para comprar hoje"
+        />
         <div className="product-grid">
           {featuredProducts.map((product) => (
-            <ProductCard key={product.slug} product={product} />
+            <ProductCard
+              key={product.slug}
+              product={product}
+              variant="editorial"
+            />
           ))}
         </div>
-      </section>
+      </StoreSection>
 
-      <section className="section muted-section">
-        <div className="section-heading">
-          <p className="eyebrow">Mapa rapido</p>
-          <h2>Categorias que vendem sem pedir licenca</h2>
-        </div>
+      <StoreSection muted>
+        <SectionHeading eyebrow="Categorias" title="Compre pelo seu momento" />
         <div className="category-grid">
           {categories.map((category) => (
             <Link
@@ -192,7 +197,7 @@ export default async function HomePage() {
             </Link>
           ))}
         </div>
-      </section>
+      </StoreSection>
     </>
   );
 }

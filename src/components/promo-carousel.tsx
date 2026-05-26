@@ -23,6 +23,8 @@ export interface PromoSlide {
   readonly products: readonly PromoSlideProduct[];
 }
 
+const heroModelImage = '/brand/conexao-hero-model.png';
+
 export function PromoCarousel({
   slides,
 }: {
@@ -59,41 +61,55 @@ export function PromoCarousel({
               <span>{slide.kicker}</span>
               <strong>
                 {slide.title}
-                <small>[{slide.bracket}]</small>
+                <small>{slide.bracket}</small>
               </strong>
               <p>{slide.tagline}</p>
-              <Link className="promo-search" href={slide.searchHref}>
+              <Link
+                className="promo-search"
+                href={slide.searchHref}
+                tabIndex={index === activeIndex ? undefined : -1}
+              >
                 {slide.searchLabel}
               </Link>
             </div>
-            <div className="promo-stage" aria-label="Produtos em destaque">
-              <div className="promo-price">
-                <span>a partir de:</span>
-                <strong>{slide.priceLabel}</strong>
-                <small>{slide.priceDetail}</small>
+            <div className="promo-visual">
+              <div className="promo-portrait" aria-hidden="true">
+                <Image
+                  alt=""
+                  height={1280}
+                  loading="eager"
+                  sizes="(max-width: 900px) 54vw, 360px"
+                  src={heroModelImage}
+                  width={960}
+                />
               </div>
-              <div className="promo-products">
-                {slide.products.length > 0 ? (
-                  slide.products.map((product) => (
-                    <Link
-                      className="promo-product"
-                      href={`/produtos/${product.slug}`}
-                      key={product.slug}
-                    >
-                      <Image
-                        alt={product.name}
-                        height={320}
-                        src={product.imageUrl}
-                        width={240}
-                      />
-                    </Link>
-                  ))
-                ) : (
-                  <div className="promo-product-empty">
-                    <span>Conexao</span>
-                    <strong>catalogo</strong>
-                  </div>
-                )}
+              <div className="promo-stage" aria-label="Produtos em destaque">
+                <div className="promo-price">
+                  <span>a partir de:</span>
+                  <strong>{slide.priceLabel}</strong>
+                  <small>{slide.priceDetail}</small>
+                </div>
+                <div className="promo-products">
+                  {slide.products.length > 0 ? (
+                    slide.products.map((product) => (
+                      <Link
+                        className="promo-product"
+                        href={`/produtos/${product.slug}`}
+                        key={product.slug}
+                        tabIndex={index === activeIndex ? undefined : -1}
+                      >
+                        <Image
+                          alt={product.name}
+                          height={320}
+                          src={product.imageUrl}
+                          width={240}
+                        />
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="promo-product-empty" aria-hidden="true" />
+                  )}
+                </div>
               </div>
             </div>
           </article>

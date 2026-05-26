@@ -3,5 +3,10 @@ coverage/
 dist/
 node_modules/
 next-env.d.ts
+src/data/products.local.json
+.playwright-mcp/
+.next-dev-*.log
+.qa-*.png
+qa-*.png
 *.html
 sitemap.xml

@@ -80,7 +80,7 @@ export function CartDrawer() {
                   <div>
                     <h3>{item.productName}</h3>
                     <p>{item.variantLabel}</p>
-                    <strong>Preco conferido no fechamento</strong>
+                    <strong>Valor confirmado no atendimento</strong>
                     <div className="quantity-control">
                       <button
                         type="button"
@@ -114,8 +114,8 @@ export function CartDrawer() {
 
             <div className="drawer-footer">
               <div className="cart-total">
-                <span>Total oficial</span>
-                <strong>No fechamento</strong>
+                <span>Total do pedido</span>
+                <strong>Confirmado no WhatsApp</strong>
               </div>
               {errorMessage ? (
                 <p className="checkout-error">{errorMessage}</p>
@@ -126,7 +126,7 @@ export function CartDrawer() {
                 disabled={isSubmitting}
                 onClick={() => void openWhatsAppCheckout()}
               >
-                {isSubmitting ? 'Recalculando...' : 'Fechar no WhatsApp'}
+                {isSubmitting ? 'Preparando...' : 'Finalizar no WhatsApp'}
               </button>
               <button
                 className="button ghost full"

@@ -32,7 +32,7 @@ export function CheckoutClient() {
     return (
       <section className="checkout-shell">
         <div className="empty-state wide">
-          <p>O carrinho esta vazio. Bora colocar produto pra vender de novo.</p>
+          <p>Seu carrinho esta vazio. Escolha uma fragrancia para comecar.</p>
           <Link className="button" href="/produtos">
             Abrir catalogo
           </Link>
@@ -45,11 +45,11 @@ export function CheckoutClient() {
     <section className="checkout-shell">
       <div className="checkout-card">
         <div>
-          <p className="eyebrow">Checkout sem Nuvemshop</p>
-          <h1>Revise e mande o pedido para o WhatsApp</h1>
+          <p className="eyebrow">Pedido assistido</p>
+          <h1>Revise seu carrinho e finalize no WhatsApp</h1>
           <p>
-            A equipe confirma estoque, frete e chave PIX antes de receber. Nada
-            passa pelo checkout bloqueado.
+            Voce recebe confirmacao de disponibilidade, frete e pagamento antes
+            de concluir a compra.
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export function CheckoutClient() {
               <div>
                 <h2>{item.productName}</h2>
                 <p>{item.variantLabel}</p>
-                <span>Preco conferido no fechamento</span>
+                <span>Valor confirmado no atendimento</span>
               </div>
               <input
                 aria-label={`Quantidade de ${item.productName}`}
@@ -89,8 +89,8 @@ export function CheckoutClient() {
         </div>
 
         <div className="checkout-total">
-          <span>Total oficial</span>
-          <strong>No fechamento</strong>
+          <span>Total do pedido</span>
+          <strong>Confirmado no WhatsApp</strong>
         </div>
 
         {errorMessage ? <p className="checkout-error">{errorMessage}</p> : null}
@@ -102,7 +102,7 @@ export function CheckoutClient() {
             disabled={isSubmitting}
             onClick={() => void openWhatsAppCheckout()}
           >
-            {isSubmitting ? 'Recalculando...' : 'Enviar pedido no WhatsApp'}
+            {isSubmitting ? 'Preparando...' : 'Finalizar no WhatsApp'}
           </button>
           <button className="button ghost" type="button" onClick={clearCart}>
             Limpar carrinho

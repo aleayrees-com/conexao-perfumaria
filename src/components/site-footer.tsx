@@ -4,8 +4,8 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div>
-        <p className="eyebrow">Operacao independente</p>
-        <h2>O perfume continua. O bloqueio nao manda na loja.</h2>
+        <p className="eyebrow">Conexao Perfumaria</p>
+        <h2>Seu proximo perfume favorito esta aqui.</h2>
       </div>
       <div>
         <Link href="/produtos">Ver catalogo</Link>

@@ -12,13 +12,13 @@ import './globals.css';
 const display = Fraunces({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: ['500', '600', '700'],
+  weight: ['400', '500', '600'],
 });
 
 const sans = Manrope({
   subsets: ['latin'],
   variable: '--font-sans',
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['300', '400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Conexao Perfumaria',
     description:
-      'Catalogo independente com pedido rapido pelo WhatsApp. Estoque e PIX confirmados pela equipe.',
+      'Perfumes, body splash e presentes com atendimento direto pelo WhatsApp.',
     siteName: 'Conexao Perfumaria',
     type: 'website',
   },
@@ -53,11 +53,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${display.variable} ${sans.variable}`}>
+      <body className={`${display.variable} ${sans.variable} site-body`}>
         <CartProvider>
           <SiteHeader />
           <CartDrawer />
-          <main>{children}</main>
+          <main className="site-main">{children}</main>
           <SiteFooter />
         </CartProvider>
       </body>

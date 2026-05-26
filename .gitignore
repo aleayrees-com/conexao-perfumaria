@@ -4,11 +4,15 @@ dist/
 node_modules/
 .env
 .env*.local
+src/data/products.local.json
 .qa-*.png
+qa-*.png
+.playwright-mcp/
 .vercel/
 *.html
 sitemap.xml
 npm-debug.log*
+.next-dev-*.log
 yarn-debug.log*
 yarn-error.log*
 tsconfig.tsbuildinfo

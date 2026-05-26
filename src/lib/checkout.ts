@@ -31,9 +31,9 @@ export function buildWhatsAppOrderMessage(
     '',
     `Total estimado: ${formatMoney(getCartTotal(items))}`,
     '',
-    'Pode confirmar estoque, frete e PIX pra mim?',
+    'Pode confirmar disponibilidade, frete e melhor forma de pagamento pra mim?',
     '',
-    'Obs.: valores recalculados pelo catalogo oficial da loja no momento do envio.',
+    'Pedido montado pelo catalogo da Conexao Perfumaria.',
   ].join('\n');
 }
 

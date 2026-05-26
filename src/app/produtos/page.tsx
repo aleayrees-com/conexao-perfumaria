@@ -1,4 +1,5 @@
 import { CatalogClient } from '@/components/catalog-client';
+import { PageHeading, PageShell } from '@/components/store-layout';
 import { getCategorySummaries, getProducts } from '@/lib/catalog';
 
 export const metadata = {
@@ -26,21 +27,22 @@ export default async function ProductsPage({
   ]);
 
   return (
-    <section className="page-shell">
-      <div className="page-heading">
-        <p className="eyebrow">Catalogo completo</p>
-        <h1>Escolha, filtre, mande para o carrinho.</h1>
+    <PageShell>
+      <PageHeading
+        eyebrow="Catalogo premium"
+        title="Encontre sua fragrancia ideal."
+      >
         <p>
-          Busca com debounce, categorias importadas e status de estoque para
-          vender sem depender do checkout antigo.
+          Filtre por categoria, veja os favoritos e monte seu pedido com
+          atendimento direto da loja.
         </p>
-      </div>
+      </PageHeading>
       <CatalogClient
         categories={categories}
         initialOnlyAvailable={resolvedSearchParams?.disponivel === '1'}
         initialSearchTerm={resolvedSearchParams?.busca ?? ''}
         products={products}
       />
-    </section>
+    </PageShell>
   );
 }

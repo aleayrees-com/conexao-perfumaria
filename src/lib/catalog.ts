@@ -1,5 +1,8 @@
 import 'server-only';
 
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { cache } from 'react';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
@@ -102,6 +105,12 @@ interface SupabaseCatalogEnv {
 type CatalogSupabaseClient = SupabaseClient<CatalogDatabase>;
 
 const fallbackProducts = productsData as readonly Product[];
+const localDevelopmentCatalogPath = join(
+  process.cwd(),
+  'src',
+  'data',
+  'products.local.json',
+);
 
 function readBlockedSupabaseProjectRefs(): readonly string[] {
   return (process.env.BLOCKED_SUPABASE_PROJECT_REFS ?? '')
@@ -144,6 +153,21 @@ function shouldRequireSupabaseCatalog(): boolean {
   return (
     process.env.VERCEL === '1' || process.env.CATALOG_SOURCE === 'supabase'
   );
+}
+
+async function readDevelopmentProducts(): Promise<readonly Product[]> {
+  if (process.env.NODE_ENV !== 'development') {
+    return fallbackProducts;
+  }
+
+  try {
+    const rawCatalog = await readFile(localDevelopmentCatalogPath, 'utf8');
+    const parsedCatalog = JSON.parse(rawCatalog) as readonly Product[];
+
+    return parsedCatalog;
+  } catch {
+    return fallbackProducts;
+  }
 }
 
 function toInteger(value: DbInteger, field: string): number {
@@ -356,7 +380,7 @@ async function readProducts(): Promise<readonly Product[]> {
       throw new Error('Supabase obrigatorio para carregar catalogo.');
     }
 
-    return fallbackProducts;
+    return readDevelopmentProducts();
   }
 
   try {
@@ -372,7 +396,7 @@ async function readProducts(): Promise<readonly Product[]> {
       `Catalogo Supabase indisponivel; usando snapshot local. ${message}`,
     );
 
-    return fallbackProducts;
+    return readDevelopmentProducts();
   }
 }
 

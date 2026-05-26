@@ -79,8 +79,8 @@ export function ProductPurchasePanel({
         {canBuy ? 'Adicionar ao carrinho' : 'Consultar no WhatsApp'}
       </button>
       <p>
-        O pedido fecha direto com a equipe. Estoque, frete e PIX sao confirmados
-        antes do pagamento.
+        Antes de pagar, a equipe confirma disponibilidade, frete e a melhor
+        forma de envio.
       </p>
     </div>
   );

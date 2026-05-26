@@ -5,12 +5,23 @@ import { ProductPurchasePanel } from '@/components/product-purchase-panel';
 import { formatMoney, getInstallmentText } from '@/lib/money';
 import type { Product } from '@/types/catalog';
 
-export function ProductCard({ product }: { readonly product: Product }) {
+export function ProductCard({
+  product,
+  variant = 'default',
+}: {
+  readonly product: Product;
+  readonly variant?: 'default' | 'editorial';
+}) {
   const imageUrl = product.imageUrls[0] ?? null;
+  const productHref = `/produtos/${product.slug}`;
 
   return (
-    <article className="product-card">
-      <Link className="product-image-link" href={`/produtos/${product.slug}`}>
+    <article
+      className={
+        variant === 'editorial' ? 'product-card editorial' : 'product-card'
+      }
+    >
+      <Link className="product-image-link" href={productHref}>
         {imageUrl ? (
           <Image
             alt={product.name}
@@ -27,7 +38,7 @@ export function ProductCard({ product }: { readonly product: Product }) {
         </span>
       </Link>
       <div className="product-card-body">
-        <Link href={`/produtos/${product.slug}`}>
+        <Link href={productHref}>
           <h3>{product.name}</h3>
         </Link>
         <p>{product.category?.name ?? 'Curadoria Conexao'}</p>
@@ -38,7 +49,13 @@ export function ProductCard({ product }: { readonly product: Product }) {
             <small>{formatMoney(product.pixPriceCents)} no PIX</small>
           ) : null}
         </div>
-        <ProductPurchasePanel product={product} />
+        {variant === 'editorial' ? (
+          <Link className="product-card-link" href={productHref}>
+            Comprar agora
+          </Link>
+        ) : (
+          <ProductPurchasePanel product={product} />
+        )}
       </div>
     </article>
   );

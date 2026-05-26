@@ -7,11 +7,11 @@ export default function ContactPage() {
   return (
     <section className="contact-page">
       <div>
-        <p className="eyebrow">Canal direto</p>
-        <h1>Se o checkout caiu, a conversa segura a venda.</h1>
+        <p className="eyebrow">Atendimento VIP</p>
+        <h1>Compre com ajuda de quem entende de perfume.</h1>
         <p>
-          Chame a equipe para confirmar disponibilidade, frete, PIX e prazo. A
-          loja esta em modo independente para voltar a vender sem travar.
+          Tire duvidas, confirme disponibilidade e receba indicacoes para
+          acertar na fragrancia ou no presente.
         </p>
       </div>
       <div className="contact-card">

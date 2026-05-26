@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { PageHeading, PageShell } from '@/components/store-layout';
+
 export const metadata = {
   title: 'Login',
   description: 'Acesso administrativo da Conexao Perfumaria.',
@@ -7,15 +9,15 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <section className="page-shell">
-      <div className="page-heading">
-        <p className="eyebrow">Painel em preparacao</p>
-        <h1>O admin vem logo depois do deploy.</h1>
+    <PageShell>
+      <PageHeading
+        eyebrow="Painel em preparacao"
+        title="Area interna em construcao."
+      >
         <p>
-          O catalogo ja esta no Supabase. O proximo bloco e transformar isso em
-          painel de produtos, pedidos e estoque.
+          Em breve a equipe tera acesso a produtos, pedidos e estoque por aqui.
         </p>
-      </div>
+      </PageHeading>
       <div className="empty-state wide">
         <p>
           Por enquanto, a loja publica segue funcionando e o acesso interno
@@ -25,6 +27,6 @@ export default function LoginPage() {
           Voltar para a loja
         </Link>
       </div>
-    </section>
+    </PageShell>
   );
 }

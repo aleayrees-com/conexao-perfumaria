@@ -1,16 +1,16 @@
 import Link from 'next/link';
 
+import { PageHeading, PageShell } from '@/components/store-layout';
+
 export default function NotFound() {
   return (
-    <section className="page-shell not-found-page">
-      <div className="page-heading">
-        <p className="eyebrow">404</p>
-        <h1>Essa rota nao esta no frasco.</h1>
+    <PageShell className="not-found-page">
+      <PageHeading eyebrow="404" title="Essa rota nao esta no frasco.">
         <p>
-          A pagina nao existe ou ainda nao foi criada. A loja continua de pe:
-          catalogo, carrinho e checkout rapido seguem funcionando.
+          A pagina nao existe, mas a curadoria segue pronta para voce escolher
+          seu proximo perfume.
         </p>
-      </div>
+      </PageHeading>
       <div className="hero-actions">
         <Link className="button" href="/produtos">
           Abrir catalogo
@@ -19,6 +19,6 @@ export default function NotFound() {
           Voltar ao inicio
         </Link>
       </div>
-    </section>
+    </PageShell>
   );
 }

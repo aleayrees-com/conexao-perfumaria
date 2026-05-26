@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { ProductCard } from '@/components/product-card';
+import { PageHeading, PageShell } from '@/components/store-layout';
 import {
   getCategoryBySlug,
   getCategorySummaries,
@@ -33,20 +34,18 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const products = await getProductsByCategory(category.slug);
 
   return (
-    <section className="page-shell">
-      <div className="page-heading">
-        <p className="eyebrow">Categoria</p>
-        <h1>{category.name}</h1>
+    <PageShell>
+      <PageHeading eyebrow="Categoria" title={category.name}>
         <p>
           {category.productCount} produtos, {category.availableCount} em pronta
           entrega.
         </p>
-      </div>
+      </PageHeading>
       <div className="product-grid">
         {products.map((product) => (
           <ProductCard key={product.slug} product={product} />
         ))}
       </div>
-    </section>
+    </PageShell>
   );
 }
