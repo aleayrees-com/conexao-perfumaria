@@ -82,37 +82,45 @@ export async function POST(request: Request) {
 
   try {
     const products = await getSupabaseProductsStrict();
-    const quoteItems = requestItems.flatMap(
-      (requestItem): CheckoutQuoteItem[] => {
-        const product = products.find((currentProduct) =>
-          currentProduct.variants.some(
-            (variant) => variant.id === requestItem.variantId,
-          ),
-        );
-        const variant = product?.variants.find(
-          (currentVariant) => currentVariant.id === requestItem.variantId,
-        );
+    const quoteItems: CheckoutQuoteItem[] = [];
 
-        if (!product || !variant) {
-          return [];
-        }
-
-        return [
-          {
-            productName: product.name,
-            variantLabel: variant.label,
-            unitPriceCents: variant.priceCents,
-            quantity: requestItem.quantity,
-          },
-        ];
-      },
-    );
-
-    if (quoteItems.length !== requestItems.length) {
-      return NextResponse.json(
-        { error: 'Um ou mais itens nao existem mais no catalogo.' },
-        { status: 409 },
+    for (const requestItem of requestItems) {
+      const product = products.find((currentProduct) =>
+        currentProduct.variants.some(
+          (variant) => variant.id === requestItem.variantId,
+        ),
       );
+      const variant = product?.variants.find(
+        (currentVariant) => currentVariant.id === requestItem.variantId,
+      );
+
+      if (!product || !variant) {
+        return NextResponse.json(
+          { error: 'Um ou mais itens nao existem mais no catalogo.' },
+          { status: 409 },
+        );
+      }
+
+      if (!product.available || !variant.available) {
+        return NextResponse.json(
+          { error: 'Um ou mais itens nao estao disponiveis.' },
+          { status: 409 },
+        );
+      }
+
+      if (requestItem.quantity > variant.stock) {
+        return NextResponse.json(
+          { error: 'Quantidade maior que o estoque disponivel.' },
+          { status: 409 },
+        );
+      }
+
+      quoteItems.push({
+        productName: product.name,
+        variantLabel: variant.label,
+        unitPriceCents: variant.priceCents,
+        quantity: requestItem.quantity,
+      });
     }
 
     return NextResponse.json({
