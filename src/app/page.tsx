@@ -52,7 +52,7 @@ function pickBannerProducts({
   const baseProducts =
     matchedProducts.length > 0 ? matchedProducts : fallbackProducts;
 
-  return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 2);
+  return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 1);
 }
 
 function getMinimumPrice(products: readonly Product[]): number | null {
@@ -82,7 +82,7 @@ function buildPromoSlides(
     {
       id: 'aniversario',
       bracket: '2 anos de Conexao',
-      title: 'junho de presentes',
+      title: 'JUNHO de presentes',
       tagline:
         'Brindes, surpresas e escolhas certeiras para o Dia dos Namorados.',
       highlights: [
