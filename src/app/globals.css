@@ -2266,8 +2266,8 @@ body::before {
 }
 
 .promo-stage {
-  width: min(720px, 100%);
-  min-height: 300px;
+  width: min(780px, 100%);
+  min-height: 342px;
   padding: 26px clamp(150px, 20vw, 235px) 26px clamp(30px, 4vw, 56px);
   border-color: rgba(216, 168, 77, 0.3);
   border-radius: 28px;
@@ -2286,15 +2286,15 @@ body::before {
 }
 
 .promo-products {
-  min-height: 250px;
-  padding-left: clamp(80px, 8vw, 128px);
+  min-height: 298px;
+  padding-left: clamp(54px, 6.5vw, 104px);
   align-items: center;
   justify-content: flex-start;
 }
 
 .promo-products .promo-product:only-child {
-  width: min(58%, 260px);
-  min-width: 180px;
+  width: min(82%, 370px);
+  min-width: 270px;
 }
 
 .promo-arrow {
@@ -2606,7 +2606,7 @@ body::before {
   }
 
   .promo-stage {
-    width: min(520px, 100%);
+    width: min(580px, 100%);
     min-height: auto;
     margin: 0;
     padding: 24px;
@@ -2621,14 +2621,14 @@ body::before {
   }
 
   .promo-products {
-    min-height: 260px;
+    min-height: 328px;
     padding-left: 0;
     justify-content: center;
   }
 
   .promo-products .promo-product:only-child {
-    width: min(72%, 300px);
-    min-width: 220px;
+    width: min(86%, 390px);
+    min-width: 280px;
   }
 }
 
@@ -2791,14 +2791,14 @@ body::before {
   }
 
   .promo-products {
-    min-height: 188px;
+    min-height: 238px;
     padding-left: 0;
     justify-content: center;
   }
 
   .promo-products .promo-product:only-child {
-    width: min(78%, 240px);
-    min-width: 170px;
+    width: min(88%, 300px);
+    min-width: 220px;
   }
 
   .promo-arrow {

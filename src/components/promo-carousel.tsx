@@ -106,9 +106,10 @@ export function PromoCarousel({
                       >
                         <Image
                           alt={product.name}
-                          height={320}
+                          height={560}
+                          sizes="(max-width: 640px) 74vw, (max-width: 1200px) 340px, 380px"
                           src={product.imageUrl}
-                          width={240}
+                          width={420}
                         />
                       </Link>
                     ))
