@@ -108,7 +108,7 @@ function buildPromoSlides(
     {
       id: 'arabes',
       bracket: 'Perfumes Arabes',
-      title: 'queridinhos da loja',
+      title: 'QUERIDINHOS da loja',
       tagline:
         'Yara, Asad, Khamrah, Fakhar e outros nomes que clientes sempre pedem.',
       highlights: [
