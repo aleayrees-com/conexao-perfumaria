@@ -10,10 +10,21 @@ export const metadata = {
 
 export const revalidate = 60;
 
+function parsePriceFilter(value: string | undefined): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsedValue = Number(value);
+
+  return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
+}
+
 interface ProductsPageProps {
   readonly searchParams?: Promise<{
     readonly busca?: string;
     readonly disponivel?: string;
+    readonly precoMax?: string;
   }>;
 }
 
@@ -25,6 +36,7 @@ export default async function ProductsPage({
     getCategorySummaries(),
     getProducts(),
   ]);
+  const initialMaxPriceCents = parsePriceFilter(resolvedSearchParams?.precoMax);
 
   return (
     <PageShell>
@@ -40,6 +52,7 @@ export default async function ProductsPage({
       <CatalogClient
         categories={categories}
         initialOnlyAvailable={resolvedSearchParams?.disponivel === '1'}
+        initialMaxPriceCents={initialMaxPriceCents}
         initialSearchTerm={resolvedSearchParams?.busca ?? ''}
         products={products}
       />

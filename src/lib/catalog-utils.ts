@@ -62,3 +62,34 @@ export function searchProducts(
     return text.includes(query);
   });
 }
+
+export function filterCatalogProducts(
+  items: readonly Product[],
+  {
+    categorySlug,
+    maxPriceCents,
+    onlyAvailable,
+    searchTerm,
+  }: {
+    readonly categorySlug: string;
+    readonly maxPriceCents: number | null;
+    readonly onlyAvailable: boolean;
+    readonly searchTerm: string;
+  },
+): readonly Product[] {
+  const categoryFiltered =
+    categorySlug === 'todos'
+      ? items
+      : items.filter((product) => product.category?.slug === categorySlug);
+  const availabilityFiltered = onlyAvailable
+    ? categoryFiltered.filter((product) => product.available)
+    : categoryFiltered;
+  const priceFiltered =
+    maxPriceCents === null
+      ? availabilityFiltered
+      : availabilityFiltered.filter(
+          (product) => product.priceCents <= maxPriceCents,
+        );
+
+  return searchProducts(priceFiltered, searchTerm);
+}

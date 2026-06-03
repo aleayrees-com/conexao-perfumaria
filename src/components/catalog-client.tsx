@@ -3,16 +3,18 @@
 import { useMemo, useState, useEffect } from 'react';
 
 import { ProductCard } from '@/components/product-card';
-import { searchProducts } from '@/lib/catalog-utils';
+import { filterCatalogProducts } from '@/lib/catalog-utils';
 import type { CategorySummary, Product } from '@/types/catalog';
 
 export function CatalogClient({
   categories,
+  initialMaxPriceCents = null,
   initialOnlyAvailable = false,
   initialSearchTerm = '',
   products,
 }: {
   readonly categories: readonly CategorySummary[];
+  readonly initialMaxPriceCents?: number | null;
   readonly initialOnlyAvailable?: boolean;
   readonly initialSearchTerm?: string;
   readonly products: readonly Product[];
@@ -22,6 +24,9 @@ export function CatalogClient({
     useState(initialSearchTerm);
   const [categorySlug, setCategorySlug] = useState('todos');
   const [onlyAvailable, setOnlyAvailable] = useState(initialOnlyAvailable);
+  const [maxPriceCents, setMaxPriceCents] = useState<number | null>(
+    initialMaxPriceCents,
+  );
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -32,16 +37,19 @@ export function CatalogClient({
   }, [searchTerm]);
 
   const filteredProducts = useMemo(() => {
-    const categoryFiltered =
-      categorySlug === 'todos'
-        ? products
-        : products.filter((product) => product.category?.slug === categorySlug);
-    const availabilityFiltered = onlyAvailable
-      ? categoryFiltered.filter((product) => product.available)
-      : categoryFiltered;
-
-    return searchProducts(availabilityFiltered, debouncedSearchTerm);
-  }, [categorySlug, debouncedSearchTerm, onlyAvailable, products]);
+    return filterCatalogProducts(products, {
+      categorySlug,
+      maxPriceCents,
+      onlyAvailable,
+      searchTerm: debouncedSearchTerm,
+    });
+  }, [
+    categorySlug,
+    debouncedSearchTerm,
+    maxPriceCents,
+    onlyAvailable,
+    products,
+  ]);
 
   return (
     <section className="catalog-section">
@@ -67,6 +75,24 @@ export function CatalogClient({
                 {category.name} ({category.productCount})
               </option>
             ))}
+          </select>
+        </label>
+        <label>
+          Valor
+          <select
+            value={maxPriceCents ?? 'todos'}
+            onChange={(event) => {
+              setMaxPriceCents(
+                event.target.value === 'todos'
+                  ? null
+                  : Number(event.target.value),
+              );
+            }}
+          >
+            <option value="todos">Todos</option>
+            <option value={15000}>Ate R$150</option>
+            <option value={25000}>Ate R$250</option>
+            <option value={35000}>Ate R$350</option>
           </select>
         </label>
         <label className="checkbox-label">
@@ -99,6 +125,7 @@ export function CatalogClient({
             onClick={() => {
               setSearchTerm('');
               setCategorySlug('todos');
+              setMaxPriceCents(null);
               setOnlyAvailable(false);
             }}
           >

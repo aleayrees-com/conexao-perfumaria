@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { CartButton } from '@/components/cart-button';
@@ -6,13 +7,10 @@ export function SiteHeader() {
   return (
     <div className="site-chrome">
       <div className="top-announcement">
-        <span>Pronta entrega, atendimento humano e compra sem enrolacao</span>
-        <Link href="/contato">Comprar pelo WhatsApp</Link>
+        <span>Use o cupom BEMVINDO e ganhe 3% de desconto</span>
+        <Link href="/produtos?disponivel=1">Ver pronta entrega</Link>
       </div>
       <header className="site-header">
-        <Link className="brand" href="/" aria-label="Conexao Perfumaria">
-          <span className="brand-wordmark">CONEXÃO</span>
-        </Link>
         <form className="site-search" action="/produtos">
           <label className="sr-only" htmlFor="site-search-input">
             Buscar produto
@@ -20,24 +18,34 @@ export function SiteHeader() {
           <input
             id="site-search-input"
             name="busca"
-            placeholder="busque perfume, body splash ou presente"
+            placeholder="Buscar"
             type="search"
           />
           <button type="submit">Buscar</button>
         </form>
+        <Link className="brand" href="/" aria-label="Conexao Perfumaria">
+          <Image
+            alt=""
+            height={140}
+            priority
+            src="/brand/conexao-logo-header.webp"
+            width={260}
+          />
+        </Link>
         <div className="header-actions">
-          <Link href="/contato">Atendimento VIP</Link>
-          <Link href="/checkout">Meu pedido</Link>
+          <Link href="/contato">WhatsApp</Link>
+          <Link href="/checkout">Pedido</Link>
           <CartButton />
         </div>
       </header>
       <nav className="category-nav" aria-label="Categorias principais">
-        <Link href="/produtos?busca=perfume">perfumes importados</Link>
-        <Link href="/produtos?busca=body%20splash">body splash</Link>
-        <Link href="/produtos?busca=kit">kits presente</Link>
-        <Link href="/produtos?busca=hidratante">hidratantes</Link>
-        <Link href="/produtos?disponivel=1">pronta entrega</Link>
-        <Link href="/contato">consultoria</Link>
+        <Link href="/">Inicio</Link>
+        <Link href="/categoria/perfumes-arabes">Perfumes Arabes</Link>
+        <Link href="/categoria/arabic-collection">Arabic Collection</Link>
+        <Link href="/produtos?busca=15ml">Perfume 15ml</Link>
+        <Link href="/categoria/hidrat-isabelle-la-belle">Hidratantes</Link>
+        <Link href="/produtos?busca=victoria">Victoria&apos;s Secret</Link>
+        <Link href="/contato">Como Comprar</Link>
       </nav>
     </div>
   );

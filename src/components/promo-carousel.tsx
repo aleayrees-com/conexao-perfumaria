@@ -16,6 +16,7 @@ export interface PromoSlide {
   readonly title: string;
   readonly bracket: string;
   readonly tagline: string;
+  readonly highlights: readonly string[];
   readonly searchLabel: string;
   readonly searchHref: string;
   readonly priceLabel: string;
@@ -64,6 +65,11 @@ export function PromoCarousel({
                 <small>{slide.bracket}</small>
               </strong>
               <p>{slide.tagline}</p>
+              <ul className="promo-highlights">
+                {slide.highlights.map((highlight) => (
+                  <li key={highlight}>{highlight}</li>
+                ))}
+              </ul>
               <Link
                 className="promo-search"
                 href={slide.searchHref}

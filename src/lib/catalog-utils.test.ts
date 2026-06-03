@@ -1,5 +1,6 @@
 import {
   buildCategorySummaries,
+  filterCatalogProducts,
   searchProducts,
   sortFeaturedProducts,
 } from '@/lib/catalog-utils';
@@ -101,5 +102,25 @@ describe('catalog utils', () => {
   it('searches by product, category and variant text', () => {
     expect(searchProducts(products, '100ml')).toHaveLength(1);
     expect(searchProducts(products, 'arabes')).toHaveLength(1);
+  });
+
+  it('filters catalog products by availability and maximum price', () => {
+    expect(
+      filterCatalogProducts(products, {
+        categorySlug: 'todos',
+        maxPriceCents: 3000,
+        onlyAvailable: false,
+        searchTerm: '',
+      }).map((product) => product.slug),
+    ).toEqual(['body-splash']);
+
+    expect(
+      filterCatalogProducts(products, {
+        categorySlug: 'todos',
+        maxPriceCents: 3000,
+        onlyAvailable: true,
+        searchTerm: '',
+      }),
+    ).toEqual([]);
   });
 });

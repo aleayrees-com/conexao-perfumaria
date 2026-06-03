@@ -8,6 +8,7 @@ import {
   getFeaturedProducts,
   getProducts,
 } from '@/lib/catalog';
+import { selectHomeFeaturedProducts } from '@/lib/home-curation';
 import { formatMoney } from '@/lib/money';
 import type { Product } from '@/types/catalog';
 
@@ -79,32 +80,49 @@ function buildPromoSlides(
   );
   const slideInputs = [
     {
-      id: 'perfumaria',
-      bracket: 'perfumaria',
-      title: 'perfume de presenca',
-      tagline: 'fragrancias marcantes, escolhidas para voce acertar sem duvida',
-      searchLabel: 'comprar agora',
-      searchHref: '/produtos?busca=perfume',
-      terms: ['perfume', 'perfumaria', 'parfum', 'arabes', 'arabe'],
-    },
-    {
-      id: 'body-splash',
-      bracket: 'body splash',
-      title: 'cheiro bom todo dia',
+      id: 'aniversario',
+      bracket: '2 anos de Conexao',
+      title: 'junho de presentes',
       tagline:
-        'body splash, hidratantes e combinacoes para uma rotina perfumada',
-      searchLabel: 'ver favoritos',
-      searchHref: '/produtos?busca=body%20splash',
-      terms: ['body splash', 'splash', 'dream brand'],
+        'Brindes, surpresas e escolhas certeiras para o Dia dos Namorados.',
+      highlights: [
+        'Compre e ganhe',
+        'Balao premiado',
+        'Atendimento para presentes',
+      ],
+      searchLabel: 'Comprar agora',
+      searchHref: '/produtos?disponivel=1',
+      terms: ['presente', 'combo', 'kit', 'perfume', 'arabes', 'arabe'],
     },
     {
-      id: 'kits',
-      bracket: 'kits especiais',
-      title: 'presente sem erro',
-      tagline: 'kits elegantes para impressionar com pronta entrega',
-      searchLabel: 'escolher kit',
+      id: 'namorados',
+      bracket: 'Dia dos Namorados',
+      title: 'presente sem duvida',
+      tagline:
+        'Perfumes e kits organizados por estilo para voce escolher mais rapido.',
+      highlights: [
+        'Kits prontos',
+        'Faixas de valor',
+        'Escolha guiada pelo WhatsApp',
+      ],
+      searchLabel: 'Ver kits',
       searchHref: '/produtos?busca=kit',
-      terms: ['kit', 'combo', 'hidratante', 'presente'],
+      terms: ['kit', 'combo', 'presente', 'hidratante'],
+    },
+    {
+      id: 'arabes',
+      bracket: 'Perfumes Arabes',
+      title: 'queridinhos da loja',
+      tagline:
+        'Yara, Asad, Khamrah, Fakhar e outros nomes que clientes sempre pedem.',
+      highlights: [
+        'Perfumes Arabes',
+        'Decantes e 15ml',
+        'Favoritos em pronta entrega',
+      ],
+      searchLabel: 'Conhecer favoritos',
+      searchHref: '/produtos?busca=arabic',
+      terms: ['yara', 'asad', 'khamrah', 'fakhar', 'sabah', 'ameerat'],
     },
   ] as const;
 
@@ -122,45 +140,110 @@ function buildPromoSlides(
       title: slideInput.title,
       bracket: slideInput.bracket,
       tagline: slideInput.tagline,
+      highlights: slideInput.highlights,
       searchLabel: slideInput.searchLabel,
       searchHref: slideInput.searchHref,
       priceLabel: minimumPrice ? formatMoney(minimumPrice) : 'consultar',
-      priceDetail: 'Atendimento confirma estoque, frete e pagamento',
+      priceDetail: 'Compra finalizada com atendimento no WhatsApp',
       products: slideProducts.map(toPromoSlideProduct),
     };
   });
 }
 
 export default async function HomePage() {
-  const [products, featuredProducts, categorySummaries] = await Promise.all([
-    getProducts(),
-    getFeaturedProducts(16),
-    getCategorySummaries(),
-  ]);
-  const categories = categorySummaries.slice(0, 8);
+  const [products, fallbackFeaturedProducts, categorySummaries] =
+    await Promise.all([
+      getProducts(),
+      getFeaturedProducts(16),
+      getCategorySummaries(),
+    ]);
+  const homeFeaturedProducts = selectHomeFeaturedProducts(products, 8);
+  const fallbackProducts = fallbackFeaturedProducts.filter(
+    (product) => product.available && product.imageUrls[0],
+  );
+  const featuredProducts =
+    homeFeaturedProducts.length > 0
+      ? homeFeaturedProducts
+      : fallbackProducts.slice(0, 8);
+  const categories = [
+    {
+      title: 'Perfumes Arabes',
+      href: '/categoria/perfumes-arabes',
+      label: 'Intensos e memoraveis',
+    },
+    {
+      title: 'Femininos',
+      href: '/produtos?busca=fem',
+      label: 'Doces, florais e elegantes',
+    },
+    {
+      title: 'Masculinos',
+      href: '/produtos?busca=masc',
+      label: 'Marcantes e sofisticados',
+    },
+    {
+      title: 'Decantes',
+      href: '/categoria/decantes-de-perfumes-arabes',
+      label: 'Experimente antes de escolher',
+    },
+    {
+      title: 'Hidratantes',
+      href: '/produtos?busca=hidratante',
+      label: 'Camadas de perfumacao',
+    },
+    {
+      title: 'Kits para Presentear',
+      href: '/produtos?busca=kit',
+      label: 'Prontos para surpreender',
+    },
+  ] as const;
   const promoSlides = buildPromoSlides(products, featuredProducts);
+  const totalAvailable = categorySummaries.reduce(
+    (total, category) => total + category.availableCount,
+    0,
+  );
 
   return (
     <>
       <PromoCarousel slides={promoSlides} />
 
+      <StoreSection>
+        <SectionHeading
+          eyebrow="Categorias"
+          title="Escolha pelo caminho mais facil"
+        />
+        <div className="home-category-grid">
+          {categories.map((category) => (
+            <Link
+              className="home-category-card"
+              href={category.href}
+              key={category.title}
+            >
+              <span>{category.label}</span>
+              <strong>{category.title}</strong>
+              <small>Ver selecao</small>
+            </Link>
+          ))}
+        </div>
+      </StoreSection>
+
       <section className="promise-strip" aria-label="Vantagens">
         <article>
-          <span>01</span>
-          <strong>Escolha com seguranca</strong>
+          <span>Loja fisica</span>
+          <strong>Atendimento de perto</strong>
           <p>
-            A equipe ajuda a encontrar a fragrancia certa para voce ou presente.
+            Voce fala com a equipe antes de fechar e tira duvidas do presente.
           </p>
         </article>
         <article>
-          <span>02</span>
+          <span>{totalAvailable}+ disponiveis</span>
           <strong>Pronta entrega real</strong>
-          <p>Produtos selecionados para sair rapido, sem esperar semanas.</p>
+          <p>O site mostra opcoes para escolher sem esperar semanas.</p>
         </article>
         <article>
-          <span>03</span>
-          <strong>Compra assistida</strong>
-          <p>Voce confirma tudo no WhatsApp antes de finalizar o pagamento.</p>
+          <span>Todo Brasil</span>
+          <strong>Envios e entregas</strong>
+          <p>Compra guiada pelo WhatsApp com valores conferidos no servidor.</p>
         </article>
       </section>
 
@@ -168,8 +251,8 @@ export default async function HomePage() {
         <SectionHeading
           actionHref="/produtos"
           actionLabel="Ver tudo"
-          eyebrow="16 favoritos da semana"
-          title="queridinhos para comprar hoje"
+          eyebrow="Os queridinhos da Conexao"
+          title="8 perfumes para decidir sem se perder"
         />
         <div className="product-grid">
           {featuredProducts.map((product) => (
@@ -182,20 +265,106 @@ export default async function HomePage() {
         </div>
       </StoreSection>
 
+      <StoreSection>
+        <SectionHeading
+          eyebrow="Nao sabe qual escolher?"
+          title="Comece pelo perfil da fragrancia"
+        />
+        <div className="scent-profile-grid">
+          <Link href="/produtos?busca=doce">
+            <span>Perfil delicado</span>
+            <strong>Amo perfumes doces</strong>
+            <small>
+              Baunilha, frutas, flores e aquela presenca confortavel.
+            </small>
+          </Link>
+          <Link href="/produtos?busca=fresco">
+            <span>Perfil leve</span>
+            <strong>Amo perfumes frescos</strong>
+            <small>Opcoes limpas para rotina, calor e banho tomado.</small>
+          </Link>
+          <Link href="/produtos?busca=intenso">
+            <span>Perfil marcante</span>
+            <strong>Amo perfumes marcantes</strong>
+            <small>
+              Arabes, amadeirados e fragrancias que ficam na memoria.
+            </small>
+          </Link>
+        </div>
+      </StoreSection>
+
       <StoreSection muted>
-        <SectionHeading eyebrow="Categorias" title="Compre pelo seu momento" />
-        <div className="category-grid">
-          {categories.map((category) => (
-            <Link
-              className="category-card"
-              href={`/categoria/${category.slug}`}
-              key={category.slug}
-            >
-              <span>{category.availableCount} pronta entrega</span>
-              <strong>{category.name}</strong>
-              <small>{category.productCount} produtos</small>
-            </Link>
-          ))}
+        <div className="about-store">
+          <div className="about-store-photo" aria-hidden="true">
+            <span>CONEXÃO</span>
+          </div>
+          <div>
+            <p className="eyebrow">Conheca a Conexao</p>
+            <h2>
+              Ha 2 anos ajudamos clientes a encontrar fragrancias que marcam
+              momentos.
+            </h2>
+            <ul>
+              <li>Loja fisica com atendimento personalizado</li>
+              <li>Enviamos para todo Brasil</li>
+              <li>Produtos originais e selecao conferida</li>
+              <li>Compra assistida pelo WhatsApp</li>
+            </ul>
+          </div>
+        </div>
+      </StoreSection>
+
+      <StoreSection>
+        <SectionHeading
+          eyebrow="Avaliacoes reais"
+          title="O que vende melhor e a confianca"
+        />
+        <div className="review-grid">
+          <article>
+            <span>WhatsApp</span>
+            <p>
+              Atendimento rapido, explicaram as diferencas e me ajudaram a
+              escolher um presente.
+            </p>
+          </article>
+          <article>
+            <span>Instagram</span>
+            <p>
+              Chegou bem embalado, cheiro maravilhoso e ainda veio com carinho
+              no detalhe.
+            </p>
+          </article>
+          <article>
+            <span>Loja fisica</span>
+            <p>
+              Gostei porque pude falar o estilo que eu queria e sair com uma
+              opcao certeira.
+            </p>
+          </article>
+        </div>
+      </StoreSection>
+
+      <StoreSection muted>
+        <SectionHeading
+          eyebrow="Dia dos Namorados"
+          title="Presentes por faixa de valor"
+        />
+        <div className="gift-guide-grid">
+          <Link href="/produtos?precoMax=15000&disponivel=1">
+            <span>Ate R$150</span>
+            <strong>Lembrancas perfumadas</strong>
+            <small>Decantes, 15ml, body splash e mimos para completar.</small>
+          </Link>
+          <Link href="/produtos?precoMax=25000&disponivel=1">
+            <span>Ate R$250</span>
+            <strong>Presente elegante</strong>
+            <small>Perfumes, hidratantes e combinacoes com impacto.</small>
+          </Link>
+          <Link href="/produtos?precoMax=35000&disponivel=1">
+            <span>Ate R$350</span>
+            <strong>Escolha especial</strong>
+            <small>Arabes marcantes e kits para impressionar.</small>
+          </Link>
         </div>
       </StoreSection>
     </>
