@@ -17,6 +17,9 @@ export interface PromoSlide {
   readonly bracket: string;
   readonly tagline: string;
   readonly highlights: readonly string[];
+  readonly imageAlt?: string;
+  readonly imageUrl?: string;
+  readonly layout: 'image' | 'showcase';
   readonly searchLabel: string;
   readonly searchHref: string;
   readonly priceLabel: string;
@@ -55,70 +58,95 @@ export function PromoCarousel({
         {slides.map((slide, index) => (
           <article
             aria-hidden={index !== activeIndex}
-            className="promo-slide"
+            className={`promo-slide ${slide.layout} ${slide.id}`}
             key={slide.id}
           >
-            <div className="promo-copy" aria-live="polite">
-              <span>{slide.kicker}</span>
-              <strong>
-                {slide.title}
-                <small>{slide.bracket}</small>
-              </strong>
-              <p>{slide.tagline}</p>
-              <ul className="promo-highlights">
-                {slide.highlights.map((highlight) => (
-                  <li key={highlight}>{highlight}</li>
-                ))}
-              </ul>
+            {slide.layout === 'image' && slide.imageUrl ? (
               <Link
-                className="promo-search"
+                className="promo-image-link"
                 href={slide.searchHref}
                 tabIndex={index === activeIndex ? undefined : -1}
               >
-                {slide.searchLabel}
-              </Link>
-            </div>
-            <div className="promo-visual">
-              <div className="promo-portrait" aria-hidden="true">
                 <Image
-                  alt=""
-                  height={1280}
-                  loading="eager"
-                  sizes="(max-width: 900px) 54vw, 360px"
-                  src={heroModelImage}
-                  width={960}
+                  alt={slide.imageAlt ?? slide.title}
+                  height={836}
+                  priority={index === 0}
+                  sizes="(max-width: 900px) calc(100vw - 48px), 1360px"
+                  src={slide.imageUrl}
+                  width={1600}
                 />
-              </div>
-              <div className="promo-stage" aria-label="Produtos em destaque">
-                <div className="promo-price">
-                  <span>a partir de:</span>
-                  <strong>{slide.priceLabel}</strong>
-                  <small>{slide.priceDetail}</small>
+              </Link>
+            ) : (
+              <>
+                <div className="promo-copy" aria-live="polite">
+                  <span>{slide.kicker}</span>
+                  <strong>
+                    {slide.title}
+                    <small>{slide.bracket}</small>
+                  </strong>
+                  <p>{slide.tagline}</p>
+                  <ul className="promo-highlights">
+                    {slide.highlights.map((highlight) => (
+                      <li key={highlight}>{highlight}</li>
+                    ))}
+                  </ul>
+                  <Link
+                    className="promo-search"
+                    href={slide.searchHref}
+                    tabIndex={index === activeIndex ? undefined : -1}
+                  >
+                    {slide.searchLabel}
+                  </Link>
                 </div>
-                <div className="promo-products">
-                  {slide.products.length > 0 ? (
-                    slide.products.map((product) => (
-                      <Link
-                        className="promo-product"
-                        href={`/produtos/${product.slug}`}
-                        key={product.slug}
-                        tabIndex={index === activeIndex ? undefined : -1}
-                      >
-                        <Image
-                          alt={product.name}
-                          height={560}
-                          sizes="(max-width: 640px) 74vw, (max-width: 1200px) 340px, 380px"
-                          src={product.imageUrl}
-                          width={420}
+                <div className="promo-visual">
+                  <div className="promo-portrait" aria-hidden="true">
+                    <Image
+                      alt=""
+                      height={1280}
+                      loading="eager"
+                      sizes="(max-width: 900px) 54vw, 360px"
+                      src={heroModelImage}
+                      width={960}
+                    />
+                  </div>
+                  <div
+                    className="promo-stage"
+                    aria-label="Produtos em destaque"
+                  >
+                    <div className="promo-price">
+                      <span>a partir de:</span>
+                      <strong>{slide.priceLabel}</strong>
+                      <small>{slide.priceDetail}</small>
+                    </div>
+                    <div className="promo-products">
+                      {slide.products.length > 0 ? (
+                        slide.products.map((product) => (
+                          <Link
+                            className="promo-product"
+                            href={`/produtos/${product.slug}`}
+                            key={product.slug}
+                            tabIndex={index === activeIndex ? undefined : -1}
+                          >
+                            <Image
+                              alt={product.name}
+                              height={560}
+                              sizes="(max-width: 640px) 74vw, (max-width: 1200px) 340px, 380px"
+                              src={product.imageUrl}
+                              width={420}
+                            />
+                          </Link>
+                        ))
+                      ) : (
+                        <div
+                          className="promo-product-empty"
+                          aria-hidden="true"
                         />
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="promo-product-empty" aria-hidden="true" />
-                  )}
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </article>
         ))}
       </div>

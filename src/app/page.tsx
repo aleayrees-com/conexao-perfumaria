@@ -82,14 +82,12 @@ function buildPromoSlides(
     {
       id: 'aniversario',
       bracket: '2 anos de Conexao',
-      title: 'JUNHO de presentes',
-      tagline:
-        'Brindes, surpresas e escolhas certeiras para o Dia dos Namorados.',
-      highlights: [
-        'Compre e ganhe',
-        'Balao premiado',
-        'Atendimento para presentes',
-      ],
+      title: 'MES DE ANIVERSARIO',
+      tagline: 'Brindes, surpresas e sorteio durante todo o mes de junho.',
+      highlights: ['Dia dos Namorados', 'Compre e ganhe', 'Sorteio especial'],
+      imageAlt: 'Banner de aniversario de 2 anos da Conexao Perfumaria',
+      imageUrl: '/brand/conexao-anniversary-banner.jpeg',
+      layout: 'image',
       searchLabel: 'Comprar agora',
       searchHref: '/produtos?disponivel=1',
       terms: ['presente', 'combo', 'kit', 'perfume', 'arabes', 'arabe'],
@@ -97,17 +95,15 @@ function buildPromoSlides(
     {
       id: 'namorados',
       bracket: 'Dia dos Namorados',
-      title: 'presente sem duvida',
-      tagline:
-        'Perfumes e kits organizados por estilo para voce escolher mais rapido.',
-      highlights: [
-        'Kits prontos',
-        'Faixas de valor',
-        'Escolha guiada pelo WhatsApp',
-      ],
-      searchLabel: 'Ver kits',
-      searchHref: '/produtos?busca=kit',
-      terms: ['kit', 'combo', 'presente', 'hidratante'],
+      title: 'PRESENTE QUE MARCA',
+      tagline: 'Fragrancias e kits para transformar junho em lembranca boa.',
+      highlights: ['Ate R$150', 'Ate R$250', 'Ate R$350'],
+      imageAlt: 'Banner de Dia dos Namorados da Conexao Perfumaria',
+      imageUrl: '/brand/conexao-valentines-banner.png',
+      layout: 'image',
+      searchLabel: 'Ver presentes',
+      searchHref: '/produtos?disponivel=1&busca=presente',
+      terms: ['kit', 'combo', 'presente', 'hidratante', 'yara'],
     },
     {
       id: 'arabes',
@@ -120,6 +116,7 @@ function buildPromoSlides(
         'Decantes e 15ml',
         'Favoritos em pronta entrega',
       ],
+      layout: 'showcase',
       searchLabel: 'Conhecer favoritos',
       searchHref: '/produtos?busca=arabic',
       terms: ['yara', 'asad', 'khamrah', 'fakhar', 'sabah', 'ameerat'],
@@ -141,6 +138,9 @@ function buildPromoSlides(
       bracket: slideInput.bracket,
       tagline: slideInput.tagline,
       highlights: slideInput.highlights,
+      imageAlt: 'imageAlt' in slideInput ? slideInput.imageAlt : undefined,
+      imageUrl: 'imageUrl' in slideInput ? slideInput.imageUrl : undefined,
+      layout: slideInput.layout,
       searchLabel: slideInput.searchLabel,
       searchHref: slideInput.searchHref,
       priceLabel: minimumPrice ? formatMoney(minimumPrice) : 'consultar',
@@ -204,7 +204,13 @@ export default async function HomePage() {
   );
 
   return (
-    <>
+    <div className="home-page">
+      <div className="site-celebration-balloons" aria-hidden="true">
+        <span className="site-balloon site-balloon-one" />
+        <span className="site-balloon site-balloon-two" />
+        <span className="site-balloon site-balloon-three" />
+        <span className="site-balloon site-balloon-four" />
+      </div>
       <PromoCarousel slides={promoSlides} />
 
       <StoreSection>
@@ -367,6 +373,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </StoreSection>
-    </>
+    </div>
   );
 }
