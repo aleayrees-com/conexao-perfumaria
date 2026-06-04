@@ -363,7 +363,7 @@ export default async function HomePage() {
               alt=""
               className="about-store-image"
               height={800}
-              src="/brand/conexao-history-banner.jpeg"
+              src="/brand/conexao-history-story-banner.png"
               width={1600}
             />
           </div>

@@ -26,10 +26,10 @@ export function SiteHeader() {
         <Link className="brand" href="/" aria-label="Conexao Perfumaria">
           <Image
             alt=""
-            height={349}
+            height={321}
             priority
-            src="/brand/conexao-wordmark.png"
-            width={1032}
+            src="/brand/conexao-wordmark-lettering.png"
+            width={859}
           />
         </Link>
         <div className="header-actions">
