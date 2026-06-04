@@ -2185,8 +2185,12 @@ h2 {
     letter-spacing: 0;
   }
 
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
   .promise-strip,
-  .product-grid,
   .category-grid {
     grid-template-columns: 1fr;
   }
@@ -3048,6 +3052,116 @@ body::before {
     border-radius: 24px;
   }
 
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .product-card {
+    border-radius: 18px;
+  }
+
+  .featured-section .product-card.editorial {
+    border-radius: 18px;
+  }
+
+  .product-image-link {
+    aspect-ratio: 1 / 0.86;
+    padding: 8px;
+    background: #fffdf8;
+  }
+
+  .product-image {
+    object-fit: contain;
+  }
+
+  .stock-pill {
+    right: 7px;
+    bottom: 7px;
+    max-width: calc(100% - 14px);
+    padding: 5px 7px;
+    font-size: 0.6rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .product-card-body,
+  .featured-section .product-card.editorial .product-card-body {
+    min-height: 0;
+    gap: 7px;
+    padding: 10px;
+  }
+
+  .product-card h3,
+  .featured-section .product-card.editorial h3 {
+    display: -webkit-box;
+    min-height: 2.55em;
+    overflow: hidden;
+    font-size: 0.82rem;
+    line-height: 1.28;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .product-card-body > p {
+    overflow: hidden;
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .price-stack {
+    gap: 2px;
+  }
+
+  .price-stack strong,
+  .featured-section .product-card.editorial .price-stack strong {
+    font-size: 1.22rem;
+  }
+
+  .price-stack span,
+  .price-stack small {
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+
+  .product-card-link {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.78rem;
+  }
+
+  .purchase-panel {
+    gap: 7px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .purchase-panel label {
+    gap: 4px;
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+  }
+
+  .purchase-panel select,
+  .purchase-panel input {
+    min-height: 36px;
+    padding: 7px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+  }
+
+  .purchase-panel .button {
+    min-height: 36px;
+    padding: 8px;
+    font-size: 0.7rem;
+    line-height: 1.15;
+  }
+
+  .purchase-panel p {
+    display: none;
+  }
+
   .about-store-photo {
     min-height: 300px;
   }
@@ -3273,6 +3387,30 @@ body::before {
   .category-nav {
     padding-inline: 12px;
     gap: 17px;
+  }
+
+  .product-grid {
+    gap: 8px;
+  }
+
+  .product-card-body,
+  .featured-section .product-card.editorial .product-card-body {
+    padding: 8px;
+  }
+
+  .product-card h3,
+  .featured-section .product-card.editorial h3 {
+    font-size: 0.76rem;
+  }
+
+  .price-stack strong,
+  .featured-section .product-card.editorial .price-stack strong {
+    font-size: 1.1rem;
+  }
+
+  .product-card-link,
+  .purchase-panel .button {
+    font-size: 0.68rem;
   }
 }
 

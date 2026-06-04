@@ -197,6 +197,24 @@ export default async function HomePage() {
       </div>
       <PromoCarousel slides={promoSlides} />
 
+      <StoreSection variant="featured">
+        <SectionHeading
+          actionHref="/produtos"
+          actionLabel="Ver tudo"
+          eyebrow="Os queridinhos da Conexao"
+          title="8 perfumes para decidir sem se perder"
+        />
+        <div className="product-grid">
+          {featuredProducts.map((product) => (
+            <ProductCard
+              key={product.slug}
+              product={product}
+              variant="editorial"
+            />
+          ))}
+        </div>
+      </StoreSection>
+
       <StoreSection>
         <SectionHeading
           eyebrow="Categorias"
@@ -213,44 +231,6 @@ export default async function HomePage() {
               <strong>{category.title}</strong>
               <small>Ver selecao</small>
             </Link>
-          ))}
-        </div>
-      </StoreSection>
-
-      <section className="promise-strip" aria-label="Vantagens">
-        <article>
-          <span>Loja fisica</span>
-          <strong>Atendimento de perto</strong>
-          <p>
-            Voce fala com a equipe antes de fechar e tira duvidas do presente.
-          </p>
-        </article>
-        <article>
-          <span>{totalAvailable}+ disponiveis</span>
-          <strong>Pronta entrega real</strong>
-          <p>O site mostra opcoes para escolher sem esperar semanas.</p>
-        </article>
-        <article>
-          <span>Todo Brasil</span>
-          <strong>Envios e entregas</strong>
-          <p>Compra guiada pelo WhatsApp com valores conferidos no servidor.</p>
-        </article>
-      </section>
-
-      <StoreSection variant="featured">
-        <SectionHeading
-          actionHref="/produtos"
-          actionLabel="Ver tudo"
-          eyebrow="Os queridinhos da Conexao"
-          title="8 perfumes para decidir sem se perder"
-        />
-        <div className="product-grid">
-          {featuredProducts.map((product) => (
-            <ProductCard
-              key={product.slug}
-              product={product}
-              variant="editorial"
-            />
           ))}
         </div>
       </StoreSection>
@@ -357,6 +337,26 @@ export default async function HomePage() {
           </Link>
         </div>
       </StoreSection>
+
+      <section className="promise-strip" aria-label="Vantagens">
+        <article>
+          <span>Loja fisica</span>
+          <strong>Atendimento de perto</strong>
+          <p>
+            Voce fala com a equipe antes de fechar e tira duvidas do presente.
+          </p>
+        </article>
+        <article>
+          <span>{totalAvailable}+ disponiveis</span>
+          <strong>Pronta entrega real</strong>
+          <p>O site mostra opcoes para escolher sem esperar semanas.</p>
+        </article>
+        <article>
+          <span>Todo Brasil</span>
+          <strong>Envios e entregas</strong>
+          <p>Compra guiada pelo WhatsApp com valores conferidos no servidor.</p>
+        </article>
+      </section>
     </div>
   );
 }
