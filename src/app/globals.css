@@ -494,6 +494,13 @@ select:focus-visible {
   overflow: hidden;
 }
 
+.promo-slide.image[aria-hidden='true'] {
+  min-height: auto;
+  max-height: none;
+  padding: clamp(14px, 2.3vw, 28px);
+  overflow: visible;
+}
+
 .home-page {
   position: relative;
   isolation: isolate;
@@ -620,6 +627,8 @@ select:focus-visible {
 }
 
 .promo-image-link {
+  position: relative;
+  z-index: 2;
   display: block;
   overflow: hidden;
   border: 1px solid rgba(216, 168, 77, 0.44);
@@ -2666,6 +2675,43 @@ body::before {
   isolation: isolate;
 }
 
+.gift-guide-grid a {
+  min-height: 240px;
+  padding-right: min(48%, 260px);
+}
+
+.gift-guide-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.gift-guide-visual {
+  position: absolute;
+  right: 4px;
+  bottom: 8px;
+  z-index: 1;
+  width: min(40%, 210px);
+  height: 70%;
+  pointer-events: none;
+}
+
+.gift-guide-card-under-150 .gift-guide-visual {
+  right: 16px;
+  bottom: 12px;
+  width: clamp(118px, 24%, 170px);
+  height: 62%;
+}
+
+.gift-guide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 28px rgba(54, 15, 74, 0.16));
+}
+
 .scent-profile-grid a:nth-child(1) {
   background:
     linear-gradient(
@@ -2711,7 +2757,7 @@ body::before {
 .gift-guide-grid small {
   position: relative;
   z-index: 2;
-  max-width: 30ch;
+  max-width: 24ch;
   font-size: 0.96rem;
   font-weight: 500;
   line-height: 1.55;
@@ -2724,13 +2770,19 @@ body::before {
 
 .scent-profile-products {
   position: absolute;
-  right: -2px;
+  right: -8px;
   bottom: 8px;
   z-index: 1;
-  width: min(46%, 230px);
-  height: 74%;
+  width: min(42%, 210px);
+  height: 70%;
   overflow: hidden;
   pointer-events: none;
+}
+
+.scent-profile-card-intense .scent-profile-products {
+  right: -18px;
+  width: min(40%, 196px);
+  height: 68%;
 }
 
 .scent-profile-product {
@@ -3044,11 +3096,21 @@ body::before {
   }
 
   .promo-slide.image {
+    display: block;
     padding: 8px;
     background: transparent;
   }
 
+  .promo-slide.image[aria-hidden='true'] {
+    min-height: auto;
+    max-height: none;
+    padding: 8px;
+    overflow: visible;
+  }
+
   .promo-image-link {
+    position: relative;
+    z-index: 2;
     border-radius: 18px;
   }
 
@@ -3154,8 +3216,33 @@ body::before {
   }
 
   .gift-guide-grid a {
-    min-height: 184px;
+    min-height: 236px;
+    padding-right: 44%;
     border-radius: 24px;
+  }
+
+  .gift-guide-grid strong {
+    max-width: 9ch;
+    font-size: 2rem;
+  }
+
+  .gift-guide-grid small {
+    max-width: 58%;
+    font-size: 0.9rem;
+  }
+
+  .gift-guide-visual {
+    right: -12px;
+    bottom: 10px;
+    width: 48%;
+    height: 72%;
+  }
+
+  .gift-guide-card-under-150 .gift-guide-visual {
+    right: -12px;
+    bottom: 10px;
+    width: 48%;
+    height: 72%;
   }
 
   .scent-profile-grid strong {
@@ -3171,6 +3258,12 @@ body::before {
   .scent-profile-products {
     right: -4px;
     bottom: 10px;
+    width: 46%;
+    height: 70%;
+  }
+
+  .scent-profile-card-intense .scent-profile-products {
+    right: -4px;
     width: 46%;
     height: 70%;
   }
@@ -3433,9 +3526,17 @@ body::before {
   }
 
   .promo-slide.image {
+    display: block;
     min-height: 0;
     padding: 8px;
     background: transparent;
+  }
+
+  .promo-slide.image[aria-hidden='true'] {
+    min-height: 0;
+    max-height: none;
+    padding: 8px;
+    overflow: visible;
   }
 
   .promo-hero.dragging .promo-slide[aria-hidden='true'] {
@@ -3448,6 +3549,8 @@ body::before {
   }
 
   .promo-image-link {
+    position: relative;
+    z-index: 2;
     border-radius: 18px;
   }
 

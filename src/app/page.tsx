@@ -94,17 +94,21 @@ function buildPromoSlides(
       terms: ['presente', 'combo', 'kit', 'perfume', 'arabes', 'arabe'],
     },
     {
-      id: 'namorados',
-      bracket: 'Dia dos Namorados',
-      title: 'PRESENTE QUE MARCA',
-      tagline: 'Fragrancias e kits para transformar junho em lembranca boa.',
-      highlights: ['Ate R$150', 'Ate R$250', 'Ate R$350'],
-      imageAlt: 'Banner de Dia dos Namorados da Conexao Perfumaria',
-      imageUrl: '/brand/conexao-valentines-banner.png',
+      id: 'historia',
+      bracket: '11 anos de historia',
+      title: 'HISTORIA NA PERFUMARIA',
+      tagline: 'Experiencias e conexoes que marcam e transformam vidas.',
+      highlights: [
+        'Qualidade que encanta',
+        'Experiencias que ficam',
+        'Conexao em cada detalhe',
+      ],
+      imageAlt: 'Banner de 11 anos de historia na perfumaria',
+      imageUrl: '/brand/conexao-history-banner.jpeg',
       layout: 'image',
-      searchLabel: 'Ver presentes',
-      searchHref: '/produtos?disponivel=1&busca=presente',
-      terms: ['kit', 'combo', 'presente', 'hidratante', 'yara'],
+      searchLabel: 'Compre aqui',
+      searchHref: '/produtos?disponivel=1',
+      terms: ['perfume', 'arabes', 'arabe', 'lattafa', 'importado'],
     },
   ] as const;
 
@@ -227,6 +231,32 @@ export default async function HomePage() {
         '/brand/scent-profiles/intense-1.png',
         '/brand/scent-profiles/intense-2.png',
       ],
+    },
+  ] as const;
+  const giftGuides = [
+    {
+      description: 'Decantes, 15ml, body splash e mimos para completar.',
+      href: '/produtos?precoMax=15000&disponivel=1',
+      id: 'under-150',
+      image: '/brand/gift-guide-cutouts/under-150.png',
+      label: 'Ate R$150',
+      title: 'Lembrancas perfumadas',
+    },
+    {
+      description: 'Perfumes, hidratantes e combinacoes com impacto.',
+      href: '/produtos?precoMax=25000&disponivel=1',
+      id: 'under-250',
+      image: '/brand/gift-guide-cutouts/under-250.png',
+      label: 'Ate R$250',
+      title: 'Presente elegante',
+    },
+    {
+      description: 'Arabes marcantes e kits para impressionar.',
+      href: '/produtos?precoMax=35000&disponivel=1',
+      id: 'under-350',
+      image: '/brand/gift-guide-cutouts/under-350.png',
+      label: 'Ate R$350',
+      title: 'Escolha especial',
     },
   ] as const;
   const promoSlides = buildPromoSlides(products, featuredProducts);
@@ -383,21 +413,28 @@ export default async function HomePage() {
           title="Presentes por faixa de valor"
         />
         <div className="gift-guide-grid">
-          <Link href="/produtos?precoMax=15000&disponivel=1">
-            <span>Ate R$150</span>
-            <strong>Lembrancas perfumadas</strong>
-            <small>Decantes, 15ml, body splash e mimos para completar.</small>
-          </Link>
-          <Link href="/produtos?precoMax=25000&disponivel=1">
-            <span>Ate R$250</span>
-            <strong>Presente elegante</strong>
-            <small>Perfumes, hidratantes e combinacoes com impacto.</small>
-          </Link>
-          <Link href="/produtos?precoMax=35000&disponivel=1">
-            <span>Ate R$350</span>
-            <strong>Escolha especial</strong>
-            <small>Arabes marcantes e kits para impressionar.</small>
-          </Link>
+          {giftGuides.map((guide) => (
+            <Link
+              className={`gift-guide-card gift-guide-card-${guide.id}`}
+              href={guide.href}
+              key={guide.id}
+            >
+              <div className="gift-guide-content">
+                <span>{guide.label}</span>
+                <strong>{guide.title}</strong>
+                <small>{guide.description}</small>
+              </div>
+              <div className="gift-guide-visual" aria-hidden="true">
+                <Image
+                  alt=""
+                  className="gift-guide-image"
+                  height={220}
+                  src={guide.image}
+                  width={220}
+                />
+              </div>
+            </Link>
+          ))}
         </div>
       </StoreSection>
 
