@@ -359,14 +359,17 @@ export default async function HomePage() {
       <StoreSection muted>
         <div className="about-store">
           <div className="about-store-photo" aria-hidden="true">
-            <span>CONEXÃO</span>
+            <Image
+              alt=""
+              className="about-store-image"
+              height={800}
+              src="/brand/conexao-history-banner.jpeg"
+              width={1600}
+            />
           </div>
           <div>
             <p className="eyebrow">Conheca a Conexao</p>
-            <h2>
-              Ha 2 anos ajudamos clientes a encontrar fragrancias que marcam
-              momentos.
-            </h2>
+            <h2>11 anos de historia conectando pessoas pelas fragrancias</h2>
             <ul>
               <li>Loja fisica com atendimento personalizado</li>
               <li>Enviamos para todo Brasil</li>

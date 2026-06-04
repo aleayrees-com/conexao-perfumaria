@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import { CatalogClient } from '@/components/catalog-client';
 import { PageHeading, PageShell } from '@/components/store-layout';
 import { getCategorySummaries, getProducts } from '@/lib/catalog';
@@ -39,15 +41,24 @@ export default async function ProductsPage({
   const initialMaxPriceCents = parsePriceFilter(resolvedSearchParams?.precoMax);
 
   return (
-    <PageShell>
+    <PageShell className="catalog-page">
       <PageHeading
         eyebrow="Catalogo premium"
-        title="Encontre sua fragrancia ideal."
+        title="Encontre sua fragrancia ideal"
       >
         <p>
           Filtre por categoria, veja os favoritos e monte seu pedido com
           atendimento direto da loja.
         </p>
+        <div className="catalog-heading-visual" aria-hidden="true">
+          <Image
+            alt=""
+            className="catalog-heading-product catalog-heading-product-main"
+            height={300}
+            src="/brand/category-cutouts/arabes.png"
+            width={360}
+          />
+        </div>
       </PageHeading>
       <CatalogClient
         categories={categories}

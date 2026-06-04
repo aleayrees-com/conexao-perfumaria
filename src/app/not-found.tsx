@@ -5,7 +5,7 @@ import { PageHeading, PageShell } from '@/components/store-layout';
 export default function NotFound() {
   return (
     <PageShell className="not-found-page">
-      <PageHeading eyebrow="404" title="Essa rota nao esta no frasco.">
+      <PageHeading eyebrow="404" title="Essa rota nao esta no frasco">
         <p>
           A pagina nao existe, mas a curadoria segue pronta para voce escolher
           seu proximo perfume.

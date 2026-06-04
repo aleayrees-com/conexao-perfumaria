@@ -12,7 +12,7 @@ export default function LoginPage() {
     <PageShell>
       <PageHeading
         eyebrow="Painel em preparacao"
-        title="Area interna em construcao."
+        title="Area interna em construcao"
       >
         <p>
           Em breve a equipe tera acesso a produtos, pedidos e estoque por aqui.
