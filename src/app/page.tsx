@@ -105,22 +105,6 @@ function buildPromoSlides(
       searchHref: '/produtos?disponivel=1&busca=presente',
       terms: ['kit', 'combo', 'presente', 'hidratante', 'yara'],
     },
-    {
-      id: 'arabes',
-      bracket: 'Perfumes Arabes',
-      title: 'QUERIDINHOS da loja',
-      tagline:
-        'Yara, Asad, Khamrah, Fakhar e outros nomes que clientes sempre pedem.',
-      highlights: [
-        'Perfumes Arabes',
-        'Decantes e 15ml',
-        'Favoritos em pronta entrega',
-      ],
-      layout: 'showcase',
-      searchLabel: 'Conhecer favoritos',
-      searchHref: '/produtos?busca=arabic',
-      terms: ['yara', 'asad', 'khamrah', 'fakhar', 'sabah', 'ameerat'],
-    },
   ] as const;
 
   return slideInputs.map((slideInput) => {
