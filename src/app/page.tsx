@@ -202,7 +202,7 @@ export default async function HomePage() {
           actionHref="/produtos"
           actionLabel="Ver tudo"
           eyebrow="Os queridinhos da Conexao"
-          title="8 perfumes para decidir sem se perder"
+          title="Perfumes queridinhos da loja"
         />
         <div className="product-grid">
           {featuredProducts.map((product) => (

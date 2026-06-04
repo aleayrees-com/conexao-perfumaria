@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Fraunces, Manrope } from 'next/font/google';
+import { Manrope } from 'next/font/google';
 
 import { CartDrawer } from '@/components/cart-drawer';
 import { CartProvider } from '@/components/cart-provider';
@@ -8,12 +8,6 @@ import { SiteHeader } from '@/components/site-header';
 import { publicEnv } from '@/lib/env';
 
 import './globals.css';
-
-const display = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['400', '500', '600'],
-});
 
 const sans = Manrope({
   subsets: ['latin'],
@@ -53,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${display.variable} ${sans.variable} site-body`}>
+      <body className={`${sans.variable} site-body`}>
         <CartProvider>
           <SiteHeader />
           <CartDrawer />

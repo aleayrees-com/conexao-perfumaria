@@ -668,7 +668,7 @@ select:focus-visible {
   display: grid;
   gap: 10px;
   color: var(--paper-strong);
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: clamp(3.4rem, 6vw, 5rem);
   font-weight: 500;
   line-height: 0.92;
@@ -795,7 +795,7 @@ select:focus-visible {
   position: relative;
   z-index: 1;
   color: var(--ink);
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 1.72rem;
   font-weight: 500;
   line-height: 0.95;
@@ -855,14 +855,17 @@ select:focus-visible {
   place-items: center;
   border: 0;
   border-radius: 999px;
-  background: var(--paper-strong);
+  background: transparent;
   color: var(--wine);
   cursor: pointer;
   font-size: 2.6rem;
   line-height: 1;
   opacity: 0;
   pointer-events: auto;
-  box-shadow: 0 16px 38px rgba(74, 18, 99, 0.16);
+  box-shadow: none;
+  text-shadow:
+    0 2px 8px rgba(74, 18, 99, 0.3),
+    0 0 16px rgba(255, 253, 249, 0.72);
   transform: translateY(-50%) scale(0.94);
   transition:
     opacity 180ms ease,
@@ -950,7 +953,7 @@ p {
 
 h1,
 h2 {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-weight: 500;
   letter-spacing: 0;
   color: var(--ink);
@@ -1090,7 +1093,7 @@ h2 {
 
 .orbital-card strong {
   max-width: 8ch;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: clamp(3.2rem, 6vw, 5.6rem);
   font-weight: 500;
   line-height: 0.82;
@@ -1103,7 +1106,7 @@ h2 {
 }
 
 .hero-metric strong {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 500;
 }
@@ -1381,7 +1384,7 @@ h2 {
 
 .price-stack strong,
 .detail-price strong {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 1.7rem;
   font-weight: 500;
   line-height: 1;
@@ -1466,7 +1469,7 @@ h2 {
 }
 
 .category-card strong {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 1.8rem;
   font-weight: 500;
   line-height: 0.95;
@@ -1685,7 +1688,7 @@ h2 {
 .cart-total strong,
 .checkout-total strong {
   color: var(--ink);
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: clamp(1.1rem, 2vw, 1.45rem);
   line-height: 1;
   text-align: right;
@@ -2246,6 +2249,12 @@ body::before {
   display: none;
 }
 
+@media (min-width: 701px) {
+  .site-chrome {
+    position: static;
+  }
+}
+
 .top-announcement {
   min-height: 36px;
   padding: 8px 18px;
@@ -2561,7 +2570,7 @@ body::before {
 }
 
 .home-category-card strong {
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 1.45rem;
   font-weight: 600;
   line-height: 0.96;
@@ -2652,7 +2661,7 @@ body::before {
 .scent-profile-grid strong,
 .gift-guide-grid strong {
   max-width: 10ch;
-  font-family: var(--font-display), serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: clamp(2rem, 3.3vw, 3rem);
   font-weight: 500;
   line-height: 0.9;
@@ -3333,13 +3342,14 @@ body::before {
     display: grid;
     width: 38px;
     height: 42px;
-    border: 1px solid rgba(216, 168, 77, 0.34);
-    border-radius: 14px;
-    background: rgba(255, 253, 249, 0.92);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: var(--wine);
     font-size: 1.65rem;
     opacity: 0.94;
     pointer-events: auto;
+    box-shadow: none;
     transform: translateY(-50%);
   }
 
