@@ -56,45 +56,6 @@ function pickBannerProducts({
   return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 1);
 }
 
-function pickScentProfileProducts({
-  fallbackProducts,
-  limit = 2,
-  products,
-  terms,
-}: {
-  readonly fallbackProducts: readonly Product[];
-  readonly limit?: number;
-  readonly products: readonly Product[];
-  readonly terms: readonly string[];
-}): readonly Product[] {
-  const matchedProducts = products.filter(
-    (product) =>
-      product.available &&
-      product.imageUrls[0] &&
-      productMatchesTerms(product, terms),
-  );
-  const baseProducts =
-    matchedProducts.length >= limit
-      ? matchedProducts
-      : matchedProducts.concat(fallbackProducts);
-  const selectedProducts: Product[] = [];
-
-  for (const product of baseProducts) {
-    if (selectedProducts.length >= limit) {
-      break;
-    }
-
-    if (
-      product.imageUrls[0] &&
-      !selectedProducts.some((selected) => selected.slug === product.slug)
-    ) {
-      selectedProducts.push(product);
-    }
-  }
-
-  return selectedProducts;
-}
-
 function getMinimumPrice(products: readonly Product[]): number | null {
   const prices = products
     .map((product) => product.priceCents)
@@ -191,34 +152,46 @@ export default async function HomePage() {
       : fallbackProducts.slice(0, 8);
   const categories = [
     {
+      id: 'arabes',
       title: 'Perfumes Arabes',
       href: '/categoria/perfumes-arabes',
       label: 'Intensos e memoraveis',
+      image: '/brand/category-cutouts/arabes.png',
     },
     {
+      id: 'femininos',
       title: 'Femininos',
       href: '/produtos?busca=fem',
       label: 'Doces, florais e elegantes',
+      image: '/brand/category-cutouts/femininos.png',
     },
     {
+      id: 'masculinos',
       title: 'Masculinos',
       href: '/produtos?busca=masc',
       label: 'Marcantes e sofisticados',
+      image: '/brand/category-cutouts/masculinos.png',
     },
     {
+      id: 'decantes',
       title: 'Decantes',
       href: '/categoria/decantes-de-perfumes-arabes',
       label: 'Experimente antes de escolher',
+      image: '/brand/category-cutouts/decantes.png',
     },
     {
+      id: 'hidratantes',
       title: 'Hidratantes',
       href: '/produtos?busca=hidratante',
       label: 'Camadas de perfumacao',
+      image: '/brand/category-cutouts/hidratantes.png',
     },
     {
+      id: 'kits',
       title: 'Kits para Presentear',
       href: '/produtos?busca=kit',
       label: 'Prontos para surpreender',
+      image: '/brand/category-cutouts/kits.png',
     },
   ] as const;
   const scentProfiles = [
@@ -227,35 +200,36 @@ export default async function HomePage() {
       href: '/produtos?busca=doce',
       id: 'sweet',
       label: 'Perfil delicado',
-      terms: ['yara', 'vanilla', 'baunilha', 'rosa', 'rose', 'doce', 'floral'],
       title: 'Amo perfumes doces',
+      images: [
+        '/brand/scent-profiles/sweet-1.png',
+        '/brand/scent-profiles/sweet-2.png',
+      ],
     },
     {
       description: 'Opcoes limpas para rotina, calor e banho tomado.',
       href: '/produtos?busca=fresco',
       id: 'fresh',
       label: 'Perfil leve',
-      terms: ['fresh', 'fresco', 'blue', 'aqua', 'garden', 'splash', 'light'],
       title: 'Amo perfumes frescos',
+      images: [
+        '/brand/scent-profiles/fresh-1.png',
+        '/brand/scent-profiles/fresh-2.png',
+      ],
     },
     {
       description: 'Arabes, amadeirados e fragrancias que ficam na memoria.',
       href: '/produtos?busca=intenso',
       id: 'intense',
       label: 'Perfil marcante',
-      terms: ['asad', 'khamrah', 'fakhar', 'ameerat', 'oud', 'arab', 'intenso'],
       title: 'Amo perfumes marcantes',
+      images: [
+        '/brand/scent-profiles/intense-1.png',
+        '/brand/scent-profiles/intense-2.png',
+      ],
     },
   ] as const;
   const promoSlides = buildPromoSlides(products, featuredProducts);
-  const scentProfileCards = scentProfiles.map((profile) => ({
-    ...profile,
-    products: pickScentProfileProducts({
-      fallbackProducts: featuredProducts,
-      products,
-      terms: profile.terms,
-    }),
-  }));
   const totalAvailable = categorySummaries.reduce(
     (total, category) => total + category.availableCount,
     0,
@@ -297,13 +271,24 @@ export default async function HomePage() {
         <div className="home-category-grid">
           {categories.map((category) => (
             <Link
-              className="home-category-card"
+              className={`home-category-card home-category-card-${category.id}`}
               href={category.href}
               key={category.title}
             >
-              <span>{category.label}</span>
-              <strong>{category.title}</strong>
-              <small>Ver selecao</small>
+              <div className="home-category-content">
+                <span>{category.label}</span>
+                <strong>{category.title}</strong>
+                <small>Ver selecao</small>
+              </div>
+              <div className="home-category-visual" aria-hidden="true">
+                <Image
+                  alt=""
+                  className="home-category-image"
+                  height={220}
+                  src={category.image}
+                  width={220}
+                />
+              </div>
             </Link>
           ))}
         </div>
@@ -315,7 +300,7 @@ export default async function HomePage() {
           title="Comece pelo perfil da fragrancia"
         />
         <div className="scent-profile-grid">
-          {scentProfileCards.map((profile) => (
+          {scentProfiles.map((profile) => (
             <Link
               className={`scent-profile-card scent-profile-card-${profile.id}`}
               href={profile.href}
@@ -325,13 +310,13 @@ export default async function HomePage() {
               <strong>{profile.title}</strong>
               <small>{profile.description}</small>
               <div className="scent-profile-products" aria-hidden="true">
-                {profile.products.map((product, index) => (
+                {profile.images.map((imageUrl, index) => (
                   <Image
                     alt=""
                     className={`scent-profile-product scent-profile-product-${index + 1}`}
                     height={220}
-                    key={product.slug}
-                    src={product.imageUrls[0] ?? ''}
+                    key={imageUrl}
+                    src={imageUrl}
                     width={220}
                   />
                 ))}
