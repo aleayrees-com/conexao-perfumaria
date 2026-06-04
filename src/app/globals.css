@@ -2621,11 +2621,14 @@ body::before {
 
 .scent-profile-grid a,
 .gift-guide-grid a {
+  position: relative;
   display: grid;
   gap: 16px;
   min-height: 220px;
+  overflow: hidden;
   padding: clamp(22px, 3vw, 30px);
   border-radius: 28px;
+  isolation: isolate;
 }
 
 .scent-profile-grid a:nth-child(1) {
@@ -2660,6 +2663,8 @@ body::before {
 
 .scent-profile-grid strong,
 .gift-guide-grid strong {
+  position: relative;
+  z-index: 2;
   max-width: 10ch;
   font-family: var(--font-sans), sans-serif;
   font-size: clamp(2rem, 3.3vw, 3rem);
@@ -2669,10 +2674,49 @@ body::before {
 
 .scent-profile-grid small,
 .gift-guide-grid small {
+  position: relative;
+  z-index: 2;
   max-width: 30ch;
   font-size: 0.96rem;
   font-weight: 500;
   line-height: 1.55;
+}
+
+.scent-profile-grid span {
+  position: relative;
+  z-index: 2;
+}
+
+.scent-profile-products {
+  position: absolute;
+  right: -8px;
+  bottom: 6px;
+  z-index: 1;
+  width: min(48%, 230px);
+  height: 76%;
+  pointer-events: none;
+}
+
+.scent-profile-product {
+  position: absolute;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 28px rgba(54, 15, 74, 0.18));
+}
+
+.scent-profile-product-1 {
+  right: 24%;
+  bottom: 0;
+  width: 76%;
+  height: 76%;
+  transform: rotate(-5deg);
+}
+
+.scent-profile-product-2 {
+  right: 0;
+  bottom: 22%;
+  width: 68%;
+  height: 68%;
+  transform: rotate(6deg);
 }
 
 .about-store {
@@ -3055,10 +3099,32 @@ body::before {
     min-height: 132px;
   }
 
-  .scent-profile-grid a,
+  .scent-profile-grid a {
+    min-height: 230px;
+    padding-right: 42%;
+    border-radius: 24px;
+  }
+
   .gift-guide-grid a {
     min-height: 184px;
     border-radius: 24px;
+  }
+
+  .scent-profile-grid strong {
+    max-width: 8ch;
+    font-size: 2rem;
+  }
+
+  .scent-profile-grid small {
+    max-width: 56%;
+    font-size: 0.9rem;
+  }
+
+  .scent-profile-products {
+    right: -12px;
+    bottom: 8px;
+    width: 48%;
+    height: 72%;
   }
 
   .product-grid {

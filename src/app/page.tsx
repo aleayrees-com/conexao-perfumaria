@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { ProductCard } from '@/components/product-card';
@@ -53,6 +54,45 @@ function pickBannerProducts({
     matchedProducts.length > 0 ? matchedProducts : fallbackProducts;
 
   return baseProducts.filter((product) => product.imageUrls[0]).slice(0, 1);
+}
+
+function pickScentProfileProducts({
+  fallbackProducts,
+  limit = 2,
+  products,
+  terms,
+}: {
+  readonly fallbackProducts: readonly Product[];
+  readonly limit?: number;
+  readonly products: readonly Product[];
+  readonly terms: readonly string[];
+}): readonly Product[] {
+  const matchedProducts = products.filter(
+    (product) =>
+      product.available &&
+      product.imageUrls[0] &&
+      productMatchesTerms(product, terms),
+  );
+  const baseProducts =
+    matchedProducts.length >= limit
+      ? matchedProducts
+      : matchedProducts.concat(fallbackProducts);
+  const selectedProducts: Product[] = [];
+
+  for (const product of baseProducts) {
+    if (selectedProducts.length >= limit) {
+      break;
+    }
+
+    if (
+      product.imageUrls[0] &&
+      !selectedProducts.some((selected) => selected.slug === product.slug)
+    ) {
+      selectedProducts.push(product);
+    }
+  }
+
+  return selectedProducts;
 }
 
 function getMinimumPrice(products: readonly Product[]): number | null {
@@ -181,7 +221,41 @@ export default async function HomePage() {
       label: 'Prontos para surpreender',
     },
   ] as const;
+  const scentProfiles = [
+    {
+      description: 'Baunilha, frutas, flores e aquela presenca confortavel.',
+      href: '/produtos?busca=doce',
+      id: 'sweet',
+      label: 'Perfil delicado',
+      terms: ['yara', 'vanilla', 'baunilha', 'rosa', 'rose', 'doce', 'floral'],
+      title: 'Amo perfumes doces',
+    },
+    {
+      description: 'Opcoes limpas para rotina, calor e banho tomado.',
+      href: '/produtos?busca=fresco',
+      id: 'fresh',
+      label: 'Perfil leve',
+      terms: ['fresh', 'fresco', 'blue', 'aqua', 'garden', 'splash', 'light'],
+      title: 'Amo perfumes frescos',
+    },
+    {
+      description: 'Arabes, amadeirados e fragrancias que ficam na memoria.',
+      href: '/produtos?busca=intenso',
+      id: 'intense',
+      label: 'Perfil marcante',
+      terms: ['asad', 'khamrah', 'fakhar', 'ameerat', 'oud', 'arab', 'intenso'],
+      title: 'Amo perfumes marcantes',
+    },
+  ] as const;
   const promoSlides = buildPromoSlides(products, featuredProducts);
+  const scentProfileCards = scentProfiles.map((profile) => ({
+    ...profile,
+    products: pickScentProfileProducts({
+      fallbackProducts: featuredProducts,
+      products,
+      terms: profile.terms,
+    }),
+  }));
   const totalAvailable = categorySummaries.reduce(
     (total, category) => total + category.availableCount,
     0,
@@ -241,25 +315,29 @@ export default async function HomePage() {
           title="Comece pelo perfil da fragrancia"
         />
         <div className="scent-profile-grid">
-          <Link href="/produtos?busca=doce">
-            <span>Perfil delicado</span>
-            <strong>Amo perfumes doces</strong>
-            <small>
-              Baunilha, frutas, flores e aquela presenca confortavel.
-            </small>
-          </Link>
-          <Link href="/produtos?busca=fresco">
-            <span>Perfil leve</span>
-            <strong>Amo perfumes frescos</strong>
-            <small>Opcoes limpas para rotina, calor e banho tomado.</small>
-          </Link>
-          <Link href="/produtos?busca=intenso">
-            <span>Perfil marcante</span>
-            <strong>Amo perfumes marcantes</strong>
-            <small>
-              Arabes, amadeirados e fragrancias que ficam na memoria.
-            </small>
-          </Link>
+          {scentProfileCards.map((profile) => (
+            <Link
+              className={`scent-profile-card scent-profile-card-${profile.id}`}
+              href={profile.href}
+              key={profile.id}
+            >
+              <span>{profile.label}</span>
+              <strong>{profile.title}</strong>
+              <small>{profile.description}</small>
+              <div className="scent-profile-products" aria-hidden="true">
+                {profile.products.map((product, index) => (
+                  <Image
+                    alt=""
+                    className={`scent-profile-product scent-profile-product-${index + 1}`}
+                    height={220}
+                    key={product.slug}
+                    src={product.imageUrls[0] ?? ''}
+                    width={220}
+                  />
+                ))}
+              </div>
+            </Link>
+          ))}
         </div>
       </StoreSection>
 
