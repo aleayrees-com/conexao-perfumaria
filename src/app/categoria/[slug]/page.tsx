@@ -7,6 +7,7 @@ import {
   getCategorySummaries,
   getProductsByCategory,
 } from '@/lib/catalog';
+import { formatPortugueseDisplayText } from '@/lib/strings';
 
 interface CategoryPageProps {
   readonly params: Promise<{
@@ -35,7 +36,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <PageShell>
-      <PageHeading eyebrow="Categoria" title={category.name}>
+      <PageHeading
+        eyebrow="Categoria"
+        title={formatPortugueseDisplayText(category.name)}
+      >
         <p>
           {category.productCount} produtos, {category.availableCount} em pronta
           entrega.

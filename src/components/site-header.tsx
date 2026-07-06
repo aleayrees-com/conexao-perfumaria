@@ -23,7 +23,7 @@ export function SiteHeader() {
           />
           <button type="submit">Buscar</button>
         </form>
-        <Link className="brand" href="/" aria-label="Conexao Perfumaria">
+        <Link className="brand" href="/" aria-label="Conexão Perfumaria">
           <Image
             alt=""
             height={321}
@@ -39,8 +39,8 @@ export function SiteHeader() {
         </div>
       </header>
       <nav className="category-nav" aria-label="Categorias principais">
-        <Link href="/">Inicio</Link>
-        <Link href="/categoria/perfumes-arabes">Perfumes Arabes</Link>
+        <Link href="/">Início</Link>
+        <Link href="/categoria/perfumes-arabes">Perfumes Árabes</Link>
         <Link href="/categoria/arabic-collection">Arabic Collection</Link>
         <Link href="/produtos?busca=15ml">Perfume 15ml</Link>
         <Link href="/categoria/hidrat-isabelle-la-belle">Hidratantes</Link>

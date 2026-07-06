@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
+import { Suspense } from 'react';
 
-import { CartDrawer } from '@/components/cart-drawer';
-import { CartProvider } from '@/components/cart-provider';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
+import { AnalyticsTags } from '@/components/analytics-tags';
+import { AppChrome } from '@/components/app-chrome';
+import { PageViewTracker } from '@/components/page-view-tracker';
 import { publicEnv } from '@/lib/env';
 
 import './globals.css';
@@ -18,11 +18,11 @@ const sans = Manrope({
 export const metadata: Metadata = {
   metadataBase: new URL(publicEnv.siteUrl),
   title: {
-    default: 'Conexao Perfumaria',
-    template: '%s | Conexao Perfumaria',
+    default: 'Conexão Perfumaria',
+    template: '%s | Conexão Perfumaria',
   },
   description:
-    'Perfumes arabes, importados, body splash e presentes com pedido rapido pelo WhatsApp.',
+    'Perfumes árabes, importados, body splash e presentes com checkout online.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
@@ -32,10 +32,10 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
-    title: 'Conexao Perfumaria',
+    title: 'Conexão Perfumaria',
     description:
-      'Perfumes, body splash e presentes com atendimento direto pelo WhatsApp.',
-    siteName: 'Conexao Perfumaria',
+      'Perfumes, body splash e presentes com pagamento online e atendimento direto.',
+    siteName: 'Conexão Perfumaria',
     type: 'website',
   },
 };
@@ -48,12 +48,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${sans.variable} site-body`}>
-        <CartProvider>
-          <SiteHeader />
-          <CartDrawer />
-          <main className="site-main">{children}</main>
-          <SiteFooter />
-        </CartProvider>
+        <AnalyticsTags />
+        <Suspense fallback={null}>
+          <PageViewTracker />
+        </Suspense>
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

@@ -1,32 +1,60 @@
-import Link from 'next/link';
-
 import { PageHeading, PageShell } from '@/components/store-layout';
+
+import { loginAdminAction } from './actions';
 
 export const metadata = {
   title: 'Login',
-  description: 'Acesso administrativo da Conexao Perfumaria.',
+  description: 'Acesso administrativo da Conexão Perfumaria.',
 };
 
-export default function LoginPage() {
+interface LoginPageProps {
+  readonly searchParams?: Promise<{
+    readonly error?: string;
+    readonly next?: string;
+  }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = await searchParams;
+
   return (
     <PageShell>
       <PageHeading
-        eyebrow="Painel em preparacao"
-        title="Area interna em construcao"
+        eyebrow="Area administrativa"
+        title="Entrar no painel da Conexão"
       >
         <p>
-          Em breve a equipe tera acesso a produtos, pedidos e estoque por aqui.
+          Acesso protegido para cuidar de produtos, estoque, pedidos e
+          conversoes.
         </p>
       </PageHeading>
-      <div className="empty-state wide">
-        <p>
-          Por enquanto, a loja publica segue funcionando e o acesso interno
-          entra na proxima etapa.
-        </p>
-        <Link className="button" href="/">
-          Voltar para a loja
-        </Link>
-      </div>
+      <form className="login-card" action={loginAdminAction}>
+        <input
+          name="next"
+          type="hidden"
+          value={resolvedSearchParams?.next ?? '/admin'}
+        />
+        <label>
+          Senha administrativa
+          <input
+            autoComplete="current-password"
+            name="password"
+            required
+            type="password"
+          />
+        </label>
+        {resolvedSearchParams?.error === 'rate' ? (
+          <p className="checkout-error">
+            Muitas tentativas. Aguarde alguns minutos e tente novamente.
+          </p>
+        ) : null}
+        {resolvedSearchParams?.error === '1' ? (
+          <p className="checkout-error">Senha invalida.</p>
+        ) : null}
+        <button className="button" type="submit">
+          Entrar
+        </button>
+      </form>
     </PageShell>
   );
 }

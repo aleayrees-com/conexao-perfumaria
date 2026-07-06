@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { ProductGallery } from '@/components/product-gallery';
 import { ProductPurchasePanel } from '@/components/product-purchase-panel';
 import { getProductBySlug, getProducts } from '@/lib/catalog';
 import { formatMoney, getInstallmentText } from '@/lib/money';
+import { formatPortugueseDisplayText } from '@/lib/strings';
 
 interface ProductPageProps {
   readonly params: Promise<{
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
   if (!product) {
     return {
-      title: 'Produto nao encontrado',
+      title: 'Produto não encontrado',
     };
   }
 
@@ -52,43 +53,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const imageUrl = product.imageUrls[0] ?? null;
-  const extraImages = product.imageUrls.slice(1, 5);
-
   return (
     <section className="product-page">
-      <div className="product-gallery">
-        {imageUrl ? (
-          <Image
-            alt={product.name}
-            className="product-main-image"
-            height={720}
-            priority
-            src={imageUrl}
-            width={720}
-          />
-        ) : (
-          <div className="product-main-image placeholder" />
-        )}
-        {extraImages.length > 0 ? (
-          <div className="thumb-row">
-            {extraImages.map((image) => (
-              <Image
-                alt=""
-                className="thumb-image"
-                height={120}
-                key={image}
-                src={image}
-                width={120}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
+      <ProductGallery
+        imageUrls={product.imageUrls}
+        productName={product.name}
+      />
 
       <div className="product-detail">
         <p className="eyebrow">
-          {product.category?.name ?? 'Curadoria Conexao'}
+          {formatPortugueseDisplayText(
+            product.category?.name ?? 'Curadoria Conexão',
+          )}
         </p>
         <h1>{product.name}</h1>
         <div className="detail-price">
@@ -98,7 +74,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <small>{formatMoney(product.pixPriceCents)} no PIX</small>
           ) : null}
         </div>
-        <p>{product.description}</p>
+        <p>{formatPortugueseDisplayText(product.description)}</p>
         <div className="stock-note">
           <span>
             {product.available ? 'Pronta entrega' : 'Consultar estoque'}

@@ -3,33 +3,18 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 import { useCart } from '@/components/cart-provider';
-import { createWhatsAppCheckout } from '@/lib/checkout-request';
+import { formatMoney } from '@/lib/money';
 
 export function CartDrawer() {
   const router = useRouter();
   const { clearCart, closeCart, isOpen, items, removeItem, updateQuantity } =
     useCart();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  async function openWhatsAppCheckout(): Promise<void> {
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
-      const { whatsappUrl } = await createWhatsAppCheckout(items);
-      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    } catch {
-      setErrorMessage(
-        'Nao consegui confirmar o pedido agora. Revise no checkout.',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const totalCents = items.reduce(
+    (total, item) => total + item.unitPriceCents * item.quantity,
+    0,
+  );
 
   if (!isOpen) {
     return null;
@@ -56,9 +41,9 @@ export function CartDrawer() {
 
         {items.length === 0 ? (
           <div className="empty-state">
-            <p>Seu carrinho esta pronto para receber uma fragrancia.</p>
+            <p>Seu carrinho está pronto para receber uma fragrância.</p>
             <Link className="button ghost" href="/produtos" onClick={closeCart}>
-              Ver catalogo
+              Ver catálogo
             </Link>
           </div>
         ) : (
@@ -80,7 +65,9 @@ export function CartDrawer() {
                   <div>
                     <h3>{item.productName}</h3>
                     <p>{item.variantLabel}</p>
-                    <strong>Valor confirmado no atendimento</strong>
+                    <strong>
+                      {formatMoney(item.unitPriceCents * item.quantity)}
+                    </strong>
                     <div className="quantity-control">
                       <button
                         type="button"
@@ -115,28 +102,17 @@ export function CartDrawer() {
             <div className="drawer-footer">
               <div className="cart-total">
                 <span>Total do pedido</span>
-                <strong>Confirmado no WhatsApp</strong>
+                <strong>{formatMoney(totalCents)}</strong>
               </div>
-              {errorMessage ? (
-                <p className="checkout-error">{errorMessage}</p>
-              ) : null}
               <button
                 className="button full"
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => void openWhatsAppCheckout()}
-              >
-                {isSubmitting ? 'Preparando...' : 'Finalizar no WhatsApp'}
-              </button>
-              <button
-                className="button ghost full"
                 type="button"
                 onClick={() => {
                   closeCart();
                   router.push('/checkout');
                 }}
               >
-                Revisar pedido
+                Revisar pedido e calcular frete
               </button>
               <button className="text-button" type="button" onClick={clearCart}>
                 Limpar carrinho

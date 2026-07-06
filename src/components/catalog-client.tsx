@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 
 import { ProductCard } from '@/components/product-card';
 import { filterCatalogProducts } from '@/lib/catalog-utils';
+import { formatPortugueseDisplayText } from '@/lib/strings';
 import type { CategorySummary, Product } from '@/types/catalog';
 
 export function CatalogClient({
@@ -55,7 +56,7 @@ export function CatalogClient({
     <section className="catalog-section">
       <div className="catalog-toolbar">
         <label>
-          Buscar fragrancia
+          Buscar fragrância
           <input
             placeholder="Ex.: Yara, Vanilla, Lattafa..."
             type="search"
@@ -72,7 +73,8 @@ export function CatalogClient({
             <option value="todos">Todas</option>
             {categories.map((category) => (
               <option key={category.slug} value={category.slug}>
-                {category.name} ({category.productCount})
+                {formatPortugueseDisplayText(category.name)} (
+                {category.productCount})
               </option>
             ))}
           </select>
@@ -90,9 +92,9 @@ export function CatalogClient({
             }}
           >
             <option value="todos">Todos</option>
-            <option value={15000}>Ate R$150</option>
-            <option value={25000}>Ate R$250</option>
-            <option value={35000}>Ate R$350</option>
+            <option value={15000}>Até R$150</option>
+            <option value={25000}>Até R$250</option>
+            <option value={35000}>Até R$350</option>
           </select>
         </label>
         <label className="checkbox-label">
@@ -101,7 +103,7 @@ export function CatalogClient({
             type="checkbox"
             onChange={(event) => setOnlyAvailable(event.target.checked)}
           />
-          So pronta entrega
+          Só pronta entrega
         </label>
       </div>
 

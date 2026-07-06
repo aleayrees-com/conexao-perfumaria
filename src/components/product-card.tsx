@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { ProductPurchasePanel } from '@/components/product-purchase-panel';
 import { formatMoney, getInstallmentText } from '@/lib/money';
+import { formatPortugueseDisplayText } from '@/lib/strings';
 import type { Product } from '@/types/catalog';
 
 export function ProductCard({
@@ -41,7 +42,11 @@ export function ProductCard({
         <Link href={productHref}>
           <h3>{product.name}</h3>
         </Link>
-        <p>{product.category?.name ?? 'Curadoria Conexao'}</p>
+        <p>
+          {formatPortugueseDisplayText(
+            product.category?.name ?? 'Curadoria Conexão',
+          )}
+        </p>
         <div className="price-stack">
           <strong>{formatMoney(product.priceCents)}</strong>
           <span>{getInstallmentText(product.priceCents)}</span>

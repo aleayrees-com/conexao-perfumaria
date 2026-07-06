@@ -22,7 +22,7 @@ const products: readonly Product[] = [
     variants: [
       {
         id: 10,
-        sku: null,
+        sku: 'YARA-100',
         label: '100ml',
         priceCents: 4100,
         compareAtPriceCents: null,
@@ -73,6 +73,40 @@ const products: readonly Product[] = [
   },
 ];
 
+const skuOnlyProduct = {
+  id: 3,
+  slug: 'produto-teste-checkout-sku',
+  name: 'Produto de Teste Checkout',
+  description: 'Produto oculto para testar compra.',
+  sourceUrl: 'https://example.com/produto-teste-checkout-sku',
+  imageUrls: [],
+  category: {
+    name: 'Teste',
+    slug: 'teste',
+    url: 'https://example.com/teste',
+  },
+  variants: [
+    {
+      id: 30,
+      sku: 'TESTE-COMPRA-000',
+      label: 'Teste InfinitePay',
+      priceCents: 100,
+      compareAtPriceCents: null,
+      pixPriceCents: null,
+      stock: 1,
+      available: true,
+      imageUrl: null,
+    },
+  ],
+  priceCents: 100,
+  compareAtPriceCents: null,
+  pixPriceCents: null,
+  totalStock: 1,
+  available: true,
+  importedAt: '2026-06-19T00:00:00.000Z',
+  catalogVisibility: 'sku_only',
+} satisfies Product & { readonly catalogVisibility: 'sku_only' };
+
 describe('catalog utils', () => {
   it('prioritizes available featured products', () => {
     expect(
@@ -102,6 +136,28 @@ describe('catalog utils', () => {
   it('searches by product, category and variant text', () => {
     expect(searchProducts(products, '100ml')).toHaveLength(1);
     expect(searchProducts(products, 'arabes')).toHaveLength(1);
+  });
+
+  it('searches public products by SKU', () => {
+    expect(
+      searchProducts(products, 'yara-100').map((product) => product.slug),
+    ).toEqual(['yara']);
+  });
+
+  it('only reveals SKU-only products when searching the exact SKU', () => {
+    const catalog = [...products, skuOnlyProduct];
+
+    expect(searchProducts(catalog, '').map((product) => product.slug)).toEqual([
+      'yara',
+      'body-splash',
+    ]);
+    expect(searchProducts(catalog, 'Produto de Teste')).toEqual([]);
+    expect(searchProducts(catalog, 'TESTE')).toEqual([]);
+    expect(
+      searchProducts(catalog, 'TESTE-COMPRA-000').map(
+        (product) => product.slug,
+      ),
+    ).toEqual(['produto-teste-checkout-sku']);
   });
 
   it('filters catalog products by availability and maximum price', () => {

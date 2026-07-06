@@ -74,7 +74,7 @@ describe('whatsapp checkout route', () => {
 
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toEqual({
-      error: 'Um ou mais itens nao estao disponiveis.',
+      error: 'Um ou mais itens não estão disponíveis.',
     });
   });
 

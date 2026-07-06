@@ -63,6 +63,7 @@ export function parseStoredCart(value: unknown): readonly CartItem[] {
     const productName = sanitizeText(item.productName);
     const variantId = sanitizePositiveInteger(item.variantId);
     const variantLabel = sanitizeText(item.variantLabel);
+    const unitPriceCents = sanitizePositiveInteger(item.unitPriceCents);
     const quantity = sanitizePositiveInteger(item.quantity, MAX_QUANTITY);
 
     if (
@@ -70,6 +71,7 @@ export function parseStoredCart(value: unknown): readonly CartItem[] {
       !productName ||
       !variantId ||
       !variantLabel ||
+      !unitPriceCents ||
       !quantity
     ) {
       return [];
@@ -81,6 +83,9 @@ export function parseStoredCart(value: unknown): readonly CartItem[] {
         productName,
         variantId,
         variantLabel,
+        sku: sanitizeText(item.sku),
+        categoryName: sanitizeText(item.categoryName),
+        unitPriceCents,
         imageUrl: sanitizeImageUrl(item.imageUrl),
         quantity,
       },

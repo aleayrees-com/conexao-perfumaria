@@ -12,6 +12,7 @@ import {
   buildCategorySummaries,
   sortFeaturedProducts,
 } from '@/lib/catalog-utils';
+import { TEST_PRODUCT, withSkuOnlyTestProduct } from '@/lib/test-product';
 import type {
   CategorySummary,
   Product,
@@ -39,7 +40,8 @@ interface CategoryRow extends Record<string, unknown> {
 interface ProductRow extends Record<string, unknown> {
   readonly id: string;
   readonly category_id: string | null;
-  readonly nuvemshop_product_id: DbInteger;
+  readonly public_product_id?: DbInteger;
+  readonly nuvemshop_product_id: DbInteger | null;
   readonly slug: string;
   readonly name: string;
   readonly description: string;
@@ -50,13 +52,18 @@ interface ProductRow extends Record<string, unknown> {
   readonly pix_price_cents: DbInteger | null;
   readonly total_stock: DbInteger;
   readonly is_available: boolean;
+  readonly shipping_weight_grams?: DbInteger;
+  readonly shipping_height_cm?: DbInteger;
+  readonly shipping_width_cm?: DbInteger;
+  readonly shipping_length_cm?: DbInteger;
   readonly imported_at: string | null;
   readonly published_at: string | null;
 }
 
 interface ProductVariantRow extends Record<string, unknown> {
   readonly product_id: string;
-  readonly nuvemshop_variant_id: DbInteger;
+  readonly public_variant_id?: DbInteger;
+  readonly nuvemshop_variant_id: DbInteger | null;
   readonly sku: string | null;
   readonly label: string;
   readonly price_cents: DbInteger;
@@ -111,6 +118,10 @@ const localDevelopmentCatalogPath = join(
   'data',
   'products.local.json',
 );
+const PRODUCT_SELECT_BASE =
+  'id,category_id,public_product_id,nuvemshop_product_id,slug,name,description,source_url,status,price_cents,compare_at_price_cents,pix_price_cents,total_stock,is_available,imported_at,published_at';
+const PRODUCT_SELECT_WITH_SHIPPING =
+  'id,category_id,public_product_id,nuvemshop_product_id,slug,name,description,source_url,status,price_cents,compare_at_price_cents,pix_price_cents,total_stock,is_available,shipping_weight_grams,shipping_height_cm,shipping_width_cm,shipping_length_cm,imported_at,published_at';
 
 function readBlockedSupabaseProjectRefs(): readonly string[] {
   return (process.env.BLOCKED_SUPABASE_PROJECT_REFS ?? '')
@@ -201,6 +212,20 @@ function throwSupabaseError(
   );
 }
 
+function isMissingShippingColumnError(
+  error: SupabaseOperationError | null,
+): boolean {
+  if (!error) {
+    return false;
+  }
+
+  const haystack = [error.message, error.details, error.hint, error.code]
+    .filter(Boolean)
+    .join(' ');
+
+  return /shipping_(weight_grams|height_cm|width_cm|length_cm)/i.test(haystack);
+}
+
 function groupVariantsByProduct(
   rows: readonly ProductVariantRow[],
 ): ReadonlyMap<string, readonly ProductVariant[]> {
@@ -208,11 +233,14 @@ function groupVariantsByProduct(
 
   for (const row of rows) {
     const current = variantsByProduct.get(row.product_id) ?? [];
+    const variantPublicId = row.public_variant_id ?? row.nuvemshop_variant_id;
+
+    if (variantPublicId === null) {
+      throw new Error('Variacao sem identificador publico.');
+    }
+
     current.push({
-      id: toInteger(
-        row.nuvemshop_variant_id,
-        'product_variants.nuvemshop_variant_id',
-      ),
+      id: toInteger(variantPublicId, 'product_variants.public_variant_id'),
       sku: row.sku,
       label: row.label,
       priceCents: toInteger(row.price_cents, 'product_variants.price_cents'),
@@ -286,31 +314,55 @@ function mapProductRowsToProducts({
   const variantsByProduct = groupVariantsByProduct(variants);
   const imagesByProduct = groupImagesByProduct(images);
 
-  return products.map((product) => ({
-    id: toInteger(
-      product.nuvemshop_product_id,
-      'products.nuvemshop_product_id',
-    ),
-    slug: product.slug,
-    name: product.name,
-    description: product.description,
-    sourceUrl: product.source_url ?? '',
-    imageUrls: imagesByProduct.get(product.id) ?? [],
-    category: mapCategory(categoriesById, product.category_id),
-    variants: variantsByProduct.get(product.id) ?? [],
-    priceCents: toInteger(product.price_cents, 'products.price_cents'),
-    compareAtPriceCents: nullableInteger(
-      product.compare_at_price_cents,
-      'products.compare_at_price_cents',
-    ),
-    pixPriceCents: nullableInteger(
-      product.pix_price_cents,
-      'products.pix_price_cents',
-    ),
-    totalStock: toInteger(product.total_stock, 'products.total_stock'),
-    available: product.is_available,
-    importedAt: product.imported_at ?? product.published_at ?? '',
-  }));
+  return products.map((product) => {
+    const productPublicId =
+      product.public_product_id ?? product.nuvemshop_product_id;
+
+    if (productPublicId === null) {
+      throw new Error('Produto sem identificador publico.');
+    }
+
+    return {
+      id: toInteger(productPublicId, 'products.public_product_id'),
+      slug: product.slug,
+      name: product.name,
+      description: product.description,
+      sourceUrl: product.source_url ?? '',
+      imageUrls: imagesByProduct.get(product.id) ?? [],
+      category: mapCategory(categoriesById, product.category_id),
+      variants: variantsByProduct.get(product.id) ?? [],
+      priceCents: toInteger(product.price_cents, 'products.price_cents'),
+      compareAtPriceCents: nullableInteger(
+        product.compare_at_price_cents,
+        'products.compare_at_price_cents',
+      ),
+      pixPriceCents: nullableInteger(
+        product.pix_price_cents,
+        'products.pix_price_cents',
+      ),
+      totalStock: toInteger(product.total_stock, 'products.total_stock'),
+      available: product.is_available,
+      importedAt: product.imported_at ?? product.published_at ?? '',
+      shippingPackage: {
+        weightGrams: toInteger(
+          product.shipping_weight_grams ?? 250,
+          'products.shipping_weight_grams',
+        ),
+        heightCm: toInteger(
+          product.shipping_height_cm ?? 8,
+          'products.shipping_height_cm',
+        ),
+        widthCm: toInteger(
+          product.shipping_width_cm ?? 8,
+          'products.shipping_width_cm',
+        ),
+        lengthCm: toInteger(
+          product.shipping_length_cm ?? 16,
+          'products.shipping_length_cm',
+        ),
+      },
+    };
+  });
 }
 
 async function fetchSupabaseProducts(
@@ -318,38 +370,52 @@ async function fetchSupabaseProducts(
 ): Promise<readonly Product[]> {
   const now = new Date().toISOString();
 
-  const [categoryResponse, productResponse, variantResponse, imageResponse] =
-    await Promise.all([
-      client
-        .from('categories')
-        .select('id,name,slug,source_url,is_active')
-        .eq('is_active', true)
-        .order('name', { ascending: true }),
-      client
-        .from('products')
-        .select(
-          'id,category_id,nuvemshop_product_id,slug,name,description,source_url,status,price_cents,compare_at_price_cents,pix_price_cents,total_stock,is_available,imported_at,published_at',
-        )
-        .eq('status', 'active')
-        .not('published_at', 'is', null)
-        .lte('published_at', now)
-        .order('name', { ascending: true }),
-      client
-        .from('product_variants')
-        .select(
-          'product_id,nuvemshop_variant_id,sku,label,price_cents,compare_at_price_cents,pix_price_cents,stock,is_available,image_url,sort_order',
-        )
-        .order('sort_order', { ascending: true }),
-      client
-        .from('product_images')
-        .select('product_id,url,sort_order,is_primary')
-        .order('is_primary', { ascending: false })
-        .order('sort_order', { ascending: true }),
-    ]);
+  const [
+    categoryResponse,
+    initialProductResponse,
+    variantResponse,
+    imageResponse,
+  ] = await Promise.all([
+    client
+      .from('categories')
+      .select('id,name,slug,source_url,is_active')
+      .eq('is_active', true)
+      .order('name', { ascending: true }),
+    client
+      .from('products')
+      .select(PRODUCT_SELECT_WITH_SHIPPING)
+      .eq('status', 'active')
+      .not('published_at', 'is', null)
+      .lte('published_at', now)
+      .order('name', { ascending: true }),
+    client
+      .from('product_variants')
+      .select(
+        'product_id,public_variant_id,nuvemshop_variant_id,sku,label,price_cents,compare_at_price_cents,pix_price_cents,stock,is_available,image_url,sort_order',
+      )
+      .order('sort_order', { ascending: true }),
+    client
+      .from('product_images')
+      .select('product_id,url,sort_order,is_primary')
+      .order('is_primary', { ascending: false })
+      .order('sort_order', { ascending: true }),
+  ]);
 
   if (categoryResponse.error) {
     throwSupabaseError('Falha ao carregar categorias', categoryResponse.error);
   }
+
+  const productResponse = isMissingShippingColumnError(
+    initialProductResponse.error,
+  )
+    ? await client
+        .from('products')
+        .select(PRODUCT_SELECT_BASE)
+        .eq('status', 'active')
+        .not('published_at', 'is', null)
+        .lte('published_at', now)
+        .order('name', { ascending: true })
+    : initialProductResponse;
 
   if (productResponse.error) {
     throwSupabaseError('Falha ao carregar produtos', productResponse.error);
@@ -409,7 +475,9 @@ export async function getSupabaseProductsStrict(): Promise<readonly Product[]> {
     throw new Error('Supabase obrigatorio para fechar pedido.');
   }
 
-  return fetchSupabaseProducts(createCatalogClient(env));
+  return withSkuOnlyTestProduct(
+    await fetchSupabaseProducts(createCatalogClient(env)),
+  );
 }
 
 export async function getAvailableProducts(): Promise<readonly Product[]> {
@@ -423,6 +491,10 @@ export async function getFeaturedProducts(
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+  if (slug === TEST_PRODUCT.slug) {
+    return TEST_PRODUCT;
+  }
+
   return (await getProducts()).find((product) => product.slug === slug) ?? null;
 }
 

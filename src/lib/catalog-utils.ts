@@ -1,5 +1,20 @@
 import type { CategorySummary, Product } from '@/types/catalog';
 
+function normalizeSearchText(value: string): string {
+  return value.trim().toLocaleLowerCase('pt-BR');
+}
+
+function isSkuOnlyProduct(product: Product): boolean {
+  return product.catalogVisibility === 'sku_only';
+}
+
+function productHasExactSku(product: Product, query: string): boolean {
+  return product.variants.some(
+    (variant) =>
+      variant.sku !== null && normalizeSearchText(variant.sku) === query,
+  );
+}
+
 export function sortFeaturedProducts(
   products: readonly Product[],
   limit = 12,
@@ -43,18 +58,23 @@ export function searchProducts(
   items: readonly Product[],
   searchTerm: string,
 ): readonly Product[] {
-  const query = searchTerm.trim().toLocaleLowerCase('pt-BR');
+  const query = normalizeSearchText(searchTerm);
 
   if (!query) {
-    return items;
+    return items.filter((product) => !isSkuOnlyProduct(product));
   }
 
   return items.filter((product) => {
+    if (isSkuOnlyProduct(product)) {
+      return productHasExactSku(product, query);
+    }
+
     const text = [
       product.name,
       product.description,
       product.category?.name ?? '',
       ...product.variants.map((variant) => variant.label),
+      ...product.variants.map((variant) => variant.sku ?? ''),
     ]
       .join(' ')
       .toLocaleLowerCase('pt-BR');

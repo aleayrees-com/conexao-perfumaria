@@ -16,16 +16,18 @@ export function getCartTotal(items: readonly CheckoutQuoteItem[]): number {
 
 export function buildWhatsAppOrderMessage(
   items: readonly CheckoutQuoteItem[],
+  orderNumber?: string,
 ): string {
   const lines = items.flatMap((item, index) => [
     `${index + 1}. ${item.productName}`,
-    `Variacao: ${item.variantLabel}`,
+    `Variação: ${item.variantLabel}`,
     `Qtd: ${item.quantity}`,
     `Subtotal: ${formatMoney(item.unitPriceCents * item.quantity)}`,
   ]);
 
   return [
-    'Oi, Conexao Perfumaria. Quero fechar este pedido:',
+    'Oi, Conexão Perfumaria. Quero fechar este pedido:',
+    orderNumber ? `Pedido: ${orderNumber}` : '',
     '',
     ...lines,
     '',
@@ -33,15 +35,20 @@ export function buildWhatsAppOrderMessage(
     '',
     'Pode confirmar disponibilidade, frete e melhor forma de pagamento pra mim?',
     '',
-    'Pedido montado pelo catalogo da Conexao Perfumaria.',
-  ].join('\n');
+    'Pedido montado pelo catálogo da Conexão Perfumaria.',
+  ]
+    .filter((line, index) => line !== '' || index > 1)
+    .join('\n');
 }
 
 export function buildWhatsAppUrl(
   whatsappNumber: string,
   items: readonly CheckoutQuoteItem[],
+  orderNumber?: string,
 ): string {
-  const message = encodeURIComponent(buildWhatsAppOrderMessage(items));
+  const message = encodeURIComponent(
+    buildWhatsAppOrderMessage(items, orderNumber),
+  );
 
   return `https://wa.me/${whatsappNumber}?text=${message}`;
 }

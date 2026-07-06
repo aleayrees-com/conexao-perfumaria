@@ -96,14 +96,14 @@ export async function POST(request: Request) {
 
       if (!product || !variant) {
         return NextResponse.json(
-          { error: 'Um ou mais itens nao existem mais no catalogo.' },
+          { error: 'Um ou mais itens não existem mais no catálogo.' },
           { status: 409 },
         );
       }
 
       if (!product.available || !variant.available) {
         return NextResponse.json(
-          { error: 'Um ou mais itens nao estao disponiveis.' },
+          { error: 'Um ou mais itens não estão disponíveis.' },
           { status: 409 },
         );
       }
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { error: 'Nao foi possivel recalcular o pedido pelo Supabase.' },
+      { error: 'Não foi possível recalcular o pedido pelo Supabase.' },
       { status: 503 },
     );
   }

@@ -2,11 +2,14 @@
 
 Fundacao SQL para catalogo, pedidos e admin da Conexao Perfumaria.
 
-## Migration inicial
+## Migrations
 
 - `migrations/20260521210000_initial_catalog_admin.sql`
+- `migrations/20260614090000_admin_ecommerce_tracking.sql`
 
-Ela cria as tabelas `categories`, `products`, `product_variants`, `product_images`, `customers`, `orders` e `order_items`.
+A primeira cria as tabelas `categories`, `products`, `product_variants`, `product_images`, `customers`, `orders` e `order_items`.
+
+A segunda adiciona suporte ao admin/e-commerce: IDs publicos independentes da Nuvemshop, `admin_profiles`, `admin_audit_logs`, `order_events`, `tracking_events` e a RPC `refresh_product_stock`.
 
 Decisoes principais:
 
@@ -30,11 +33,13 @@ $env:SUPABASE_SERVICE_ROLE_KEY="SERVICE_ROLE_KEY"
 
 Para o projeto `nhbopjnibuxfpkslbawf`, o host direto `db.PROJECT_REF.supabase.co` resolveu apenas IPv6 neste ambiente. O pooler IPv4 validado foi `aws-1-us-east-1.pooler.supabase.com:5432`.
 
-2. Aplique o schema:
+2. Aplique as migrations em ordem:
 
 ```powershell
 npm run migrate:supabase
 ```
+
+O script cria `public.schema_migrations` para nao reaplicar arquivos ja executados.
 
 3. Valide o snapshot local sem tocar no banco:
 

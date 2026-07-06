@@ -4,12 +4,12 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div>
-        <p className="eyebrow">Conexao Perfumaria</p>
-        <h2>Seu proximo perfume favorito esta mais perto.</h2>
+        <p className="eyebrow">Conexão Perfumaria</p>
+        <h2>Seu próximo perfume favorito está mais perto.</h2>
       </div>
       <div className="footer-links">
-        <Link href="/produtos">Catalogo</Link>
-        <Link href="/contato">Endereco da loja</Link>
+        <Link href="/produtos">Catálogo</Link>
+        <Link href="/contato">Endereço da loja</Link>
         <a
           href="https://wa.me/555521981024555"
           rel="noreferrer"

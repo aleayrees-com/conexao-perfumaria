@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Contato',
-  description: 'Fale com a Conexao Perfumaria pelo WhatsApp ou Instagram.',
+  description: 'Fale com a Conexão Perfumaria pelo WhatsApp ou Instagram.',
 };
 
 export default function ContactPage() {
@@ -10,8 +10,8 @@ export default function ContactPage() {
         <p className="eyebrow">Atendimento VIP</p>
         <h1>Compre com ajuda de quem entende de perfume.</h1>
         <p>
-          Tire duvidas, confirme disponibilidade e receba indicacoes para
-          acertar na fragrancia ou no presente.
+          Tire dúvidas, confirme disponibilidade e receba indicações para
+          acertar na fragrância ou no presente.
         </p>
       </div>
       <div className="contact-card">

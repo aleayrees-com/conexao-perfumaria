@@ -4,6 +4,11 @@ import { useMemo, useState } from 'react';
 
 import { useCart } from '@/components/cart-provider';
 import { formatMoney } from '@/lib/money';
+import {
+  createTrackingEventId,
+  productToTrackingPayload,
+  trackEcommerceEvent,
+} from '@/lib/tracking';
 import type { Product, ProductVariant } from '@/types/catalog';
 
 function getInitialVariant(product: Product): ProductVariant {
@@ -33,7 +38,7 @@ export function ProductPurchasePanel({
   return (
     <div className="purchase-panel">
       <label>
-        Variacao
+        Variação
         <select
           value={variantId}
           onChange={(event) => setVariantId(Number(event.target.value))}
@@ -62,19 +67,31 @@ export function ProductPurchasePanel({
       <button
         className="button full"
         type="button"
-        onClick={() =>
+        onClick={() => {
           addItem(
             {
               productSlug: product.slug,
               productName: product.name,
               variantId: selectedVariant.id,
               variantLabel: selectedVariant.label,
+              sku: selectedVariant.sku,
+              categoryName: product.category?.name ?? null,
+              unitPriceCents: selectedVariant.priceCents,
               imageUrl:
                 selectedVariant.imageUrl ?? product.imageUrls[0] ?? null,
             },
             quantity,
-          )
-        }
+          );
+          trackEcommerceEvent(
+            'add_to_cart',
+            productToTrackingPayload({
+              eventId: createTrackingEventId('cart'),
+              product,
+              quantity,
+              variant: selectedVariant,
+            }),
+          );
+        }}
       >
         {canBuy ? 'Adicionar ao carrinho' : 'Consultar no WhatsApp'}
       </button>

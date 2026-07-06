@@ -3,11 +3,12 @@ import Image from 'next/image';
 import { CatalogClient } from '@/components/catalog-client';
 import { PageHeading, PageShell } from '@/components/store-layout';
 import { getCategorySummaries, getProducts } from '@/lib/catalog';
+import { withSkuOnlyTestProduct } from '@/lib/test-product';
 
 export const metadata = {
-  title: 'Catalogo',
+  title: 'Catálogo',
   description:
-    'Catalogo completo da Conexao Perfumaria com pedido direto pelo WhatsApp.',
+    'Catálogo completo da Conexão Perfumaria com pedido direto pelo WhatsApp.',
 };
 
 export const revalidate = 60;
@@ -43,8 +44,8 @@ export default async function ProductsPage({
   return (
     <PageShell className="catalog-page">
       <PageHeading
-        eyebrow="Catalogo premium"
-        title="Encontre sua fragrancia ideal"
+        eyebrow="Catálogo premium"
+        title="Encontre sua fragrância ideal"
       >
         <p>
           Filtre por categoria, veja os favoritos e monte seu pedido com
@@ -65,7 +66,7 @@ export default async function ProductsPage({
         initialOnlyAvailable={resolvedSearchParams?.disponivel === '1'}
         initialMaxPriceCents={initialMaxPriceCents}
         initialSearchTerm={resolvedSearchParams?.busca ?? ''}
-        products={products}
+        products={withSkuOnlyTestProduct(products)}
       />
     </PageShell>
   );

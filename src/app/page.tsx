@@ -82,11 +82,11 @@ function buildPromoSlides(
   const slideInputs = [
     {
       id: 'aniversario',
-      bracket: '2 anos de Conexao',
-      title: 'MES DE ANIVERSARIO',
-      tagline: 'Brindes, surpresas e sorteio durante todo o mes de junho.',
+      bracket: '2 anos de Conexão',
+      title: 'MÊS DE ANIVERSÁRIO',
+      tagline: 'Brindes, surpresas e sorteio durante todo o mês de junho.',
       highlights: ['Dia dos Namorados', 'Compre e ganhe', 'Sorteio especial'],
-      imageAlt: 'Banner de aniversario de 2 anos da Conexao Perfumaria',
+      imageAlt: 'Banner de aniversário de 2 anos da Conexão Perfumaria',
       imageUrl: '/brand/conexao-anniversary-banner.jpeg',
       layout: 'image',
       searchLabel: 'Comprar agora',
@@ -95,15 +95,15 @@ function buildPromoSlides(
     },
     {
       id: 'historia',
-      bracket: '11 anos de historia',
-      title: 'HISTORIA NA PERFUMARIA',
-      tagline: 'Experiencias e conexoes que marcam e transformam vidas.',
+      bracket: '11 anos de história',
+      title: 'HISTÓRIA NA PERFUMARIA',
+      tagline: 'Experiências e conexões que marcam e transformam vidas.',
       highlights: [
         'Qualidade que encanta',
-        'Experiencias que ficam',
-        'Conexao em cada detalhe',
+        'Experiências que ficam',
+        'Conexão em cada detalhe',
       ],
-      imageAlt: 'Banner de 11 anos de historia na perfumaria',
+      imageAlt: 'Banner de 11 anos de história na perfumaria',
       imageUrl: '/brand/conexao-history-banner.jpeg',
       layout: 'image',
       searchLabel: 'Compre aqui',
@@ -122,7 +122,7 @@ function buildPromoSlides(
 
     return {
       id: slideInput.id,
-      kicker: 'Conexao Perfumaria',
+      kicker: 'Conexão Perfumaria',
       title: slideInput.title,
       bracket: slideInput.bracket,
       tagline: slideInput.tagline,
@@ -157,9 +157,9 @@ export default async function HomePage() {
   const categories = [
     {
       id: 'arabes',
-      title: 'Perfumes Arabes',
+      title: 'Perfumes Árabes',
       href: '/categoria/perfumes-arabes',
-      label: 'Intensos e memoraveis',
+      label: 'Intensos e memoráveis',
       image: '/brand/category-cutouts/arabes.png',
     },
     {
@@ -187,7 +187,7 @@ export default async function HomePage() {
       id: 'hidratantes',
       title: 'Hidratantes',
       href: '/produtos?busca=hidratante',
-      label: 'Camadas de perfumacao',
+      label: 'Camadas de perfumação',
       image: '/brand/category-cutouts/hidratantes.png',
     },
     {
@@ -200,7 +200,7 @@ export default async function HomePage() {
   ] as const;
   const scentProfiles = [
     {
-      description: 'Baunilha, frutas, flores e aquela presenca confortavel.',
+      description: 'Baunilha, frutas, flores e aquela presença confortável.',
       href: '/produtos?busca=doce',
       id: 'sweet',
       label: 'Perfil delicado',
@@ -211,7 +211,7 @@ export default async function HomePage() {
       ],
     },
     {
-      description: 'Opcoes limpas para rotina, calor e banho tomado.',
+      description: 'Opções limpas para rotina, calor e banho tomado.',
       href: '/produtos?busca=fresco',
       id: 'fresh',
       label: 'Perfil leve',
@@ -222,7 +222,7 @@ export default async function HomePage() {
       ],
     },
     {
-      description: 'Arabes, amadeirados e fragrancias que ficam na memoria.',
+      description: 'Árabes, amadeirados e fragrâncias que ficam na memória.',
       href: '/produtos?busca=intenso',
       id: 'intense',
       label: 'Perfil marcante',
@@ -239,23 +239,23 @@ export default async function HomePage() {
       href: '/produtos?precoMax=15000&disponivel=1',
       id: 'under-150',
       image: '/brand/gift-guide-cutouts/under-150.png',
-      label: 'Ate R$150',
-      title: 'Lembrancas perfumadas',
+      label: 'Até R$150',
+      title: 'Lembranças perfumadas',
     },
     {
-      description: 'Perfumes, hidratantes e combinacoes com impacto.',
+      description: 'Perfumes, hidratantes e combinações com impacto.',
       href: '/produtos?precoMax=25000&disponivel=1',
       id: 'under-250',
       image: '/brand/gift-guide-cutouts/under-250.png',
-      label: 'Ate R$250',
+      label: 'Até R$250',
       title: 'Presente elegante',
     },
     {
-      description: 'Arabes marcantes e kits para impressionar.',
+      description: 'Árabes marcantes e kits para impressionar.',
       href: '/produtos?precoMax=35000&disponivel=1',
       id: 'under-350',
       image: '/brand/gift-guide-cutouts/under-350.png',
-      label: 'Ate R$350',
+      label: 'Até R$350',
       title: 'Escolha especial',
     },
   ] as const;
@@ -279,7 +279,7 @@ export default async function HomePage() {
         <SectionHeading
           actionHref="/produtos"
           actionLabel="Ver tudo"
-          eyebrow="Os queridinhos da Conexao"
+          eyebrow="Os queridinhos da Conexão"
           title="Perfumes queridinhos da loja"
         />
         <div className="product-grid">
@@ -296,7 +296,7 @@ export default async function HomePage() {
       <StoreSection>
         <SectionHeading
           eyebrow="Categorias"
-          title="Escolha pelo caminho mais facil"
+          title="Escolha pelo caminho mais fácil"
         />
         <div className="home-category-grid">
           {categories.map((category) => (
@@ -308,7 +308,7 @@ export default async function HomePage() {
               <div className="home-category-content">
                 <span>{category.label}</span>
                 <strong>{category.title}</strong>
-                <small>Ver selecao</small>
+                <small>Ver seleção</small>
               </div>
               <div className="home-category-visual" aria-hidden="true">
                 <Image
@@ -326,8 +326,8 @@ export default async function HomePage() {
 
       <StoreSection>
         <SectionHeading
-          eyebrow="Nao sabe qual escolher?"
-          title="Comece pelo perfil da fragrancia"
+          eyebrow="Não sabe qual escolher?"
+          title="Comece pelo perfil da fragrância"
         />
         <div className="scent-profile-grid">
           {scentProfiles.map((profile) => (
@@ -368,12 +368,12 @@ export default async function HomePage() {
             />
           </div>
           <div>
-            <p className="eyebrow">Conheca a Conexao</p>
-            <h2>11 anos de historia conectando pessoas pelas fragrancias</h2>
+            <p className="eyebrow">Conheça a Conexão</p>
+            <h2>11 anos de história conectando pessoas pelas fragrâncias</h2>
             <ul>
-              <li>Loja fisica com atendimento personalizado</li>
+              <li>Loja física com atendimento personalizado</li>
               <li>Enviamos para todo Brasil</li>
-              <li>Produtos originais e selecao conferida</li>
+              <li>Produtos originais e seleção conferida</li>
               <li>Compra assistida pelo WhatsApp</li>
             </ul>
           </div>
@@ -382,14 +382,14 @@ export default async function HomePage() {
 
       <StoreSection>
         <SectionHeading
-          eyebrow="Avaliacoes reais"
-          title="O que vende melhor e a confianca"
+          eyebrow="Avaliações reais"
+          title="O que vende melhor é a confiança"
         />
         <div className="review-grid">
           <article>
             <span>WhatsApp</span>
             <p>
-              Atendimento rapido, explicaram as diferencas e me ajudaram a
+              Atendimento rápido, explicaram as diferenças e me ajudaram a
               escolher um presente.
             </p>
           </article>
@@ -401,10 +401,10 @@ export default async function HomePage() {
             </p>
           </article>
           <article>
-            <span>Loja fisica</span>
+            <span>Loja física</span>
             <p>
               Gostei porque pude falar o estilo que eu queria e sair com uma
-              opcao certeira.
+              opção certeira.
             </p>
           </article>
         </div>
@@ -443,16 +443,16 @@ export default async function HomePage() {
 
       <section className="promise-strip" aria-label="Vantagens">
         <article>
-          <span>Loja fisica</span>
+          <span>Loja física</span>
           <strong>Atendimento de perto</strong>
           <p>
-            Voce fala com a equipe antes de fechar e tira duvidas do presente.
+            Você fala com a equipe antes de fechar e tira dúvidas do presente.
           </p>
         </article>
         <article>
-          <span>{totalAvailable}+ disponiveis</span>
+          <span>{totalAvailable}+ disponíveis</span>
           <strong>Pronta entrega real</strong>
-          <p>O site mostra opcoes para escolher sem esperar semanas.</p>
+          <p>O site mostra opções para escolher sem esperar semanas.</p>
         </article>
         <article>
           <span>Todo Brasil</span>

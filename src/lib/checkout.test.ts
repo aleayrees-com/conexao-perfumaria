@@ -24,6 +24,6 @@ describe('checkout helpers', () => {
     expect(message).toContain('Sabah Al Ward');
     expect(message).toContain('Qtd: 2');
     expect(message).toContain('Total estimado: R$ 820,00');
-    expect(message).toContain('catalogo da Conexao Perfumaria');
+    expect(message).toContain('catálogo da Conexão Perfumaria');
   });
 });
