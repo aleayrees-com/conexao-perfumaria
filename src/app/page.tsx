@@ -387,7 +387,7 @@ export default async function HomePage() {
         />
         <div className="review-grid">
           <article>
-            <span>Feedback 1 · Entusiástico e emocional · Avaliação: 5,0</span>
+            <span>Fiquei completamente encantada</span>
             <p>
               Cheguei sem muita expectativa e saí completamente apaixonada! A
               Conexão Perfumaria é simplesmente mágica. Os perfumes são
@@ -400,7 +400,7 @@ export default async function HomePage() {
             </p>
           </article>
           <article>
-            <span>Feedback 2 · Qualidade e variedade · Avaliação: 5,0</span>
+            <span>Qualidade e variedade impressionantes</span>
             <p>
               Melhor loja de perfumes que já visitei! A Conexão Perfumaria tem
               uma variedade impressionante, desde fragrâncias mais doces até as
@@ -412,7 +412,7 @@ export default async function HomePage() {
             </p>
           </article>
           <article>
-            <span>Feedback 3 · Curto e direto · Avaliação: 5,0</span>
+            <span>Excelência no atendimento</span>
             <p>
               Excelente loja! Atendimento nota 10, perfumes com ótima fixação e
               um ambiente super agradável. A Conexão Perfumaria se tornou minha
