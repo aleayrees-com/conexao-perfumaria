@@ -387,6 +387,13 @@ export default async function HomePage() {
         />
         <div className="review-grid">
           <article>
+            <Image
+              alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
+              className="review-image"
+              height={320}
+              src="/reviews/feedback-1.png"
+              width={240}
+            />
             <span>Fiquei completamente encantada</span>
             <p>
               Cheguei sem muita expectativa e saí completamente apaixonada! A
@@ -400,6 +407,13 @@ export default async function HomePage() {
             </p>
           </article>
           <article>
+            <Image
+              alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
+              className="review-image"
+              height={320}
+              src="/reviews/feedback-2.png"
+              width={240}
+            />
             <span>Qualidade e variedade impressionantes</span>
             <p>
               Melhor loja de perfumes que já visitei! A Conexão Perfumaria tem
