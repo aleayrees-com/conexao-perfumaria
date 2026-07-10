@@ -430,11 +430,14 @@ export default async function HomePage() {
             </p>
           </article>
           <article>
-            <div
-              aria-hidden="true"
-              className="review-avatar review-avatar-placeholder"
-            >
-              “
+            <div className="review-avatar">
+              <Image
+                alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
+                className="review-image"
+                height={320}
+                src="/reviews/feedback-3.png"
+                width={240}
+              />
             </div>
             <span>Excelência no atendimento</span>
             <p>
