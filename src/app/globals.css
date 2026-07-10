@@ -3325,15 +3325,30 @@ body::before {
 
 .review-image {
   display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+.review-avatar {
+  display: grid;
+  place-items: center;
   width: 124px;
   height: 124px;
   margin-inline: auto;
-  aspect-ratio: 1;
-  object-fit: cover;
-  object-position: center 28%;
+  overflow: hidden;
   border: 4px solid var(--paper);
   border-radius: 50%;
   box-shadow: 0 10px 24px rgba(54, 15, 74, 0.14);
+}
+
+.review-avatar-placeholder {
+  color: var(--amber-dark);
+  background: var(--paper);
+  font-family: Georgia, serif;
+  font-size: 4.5rem;
+  line-height: 1;
 }
 
 .review-grid span {

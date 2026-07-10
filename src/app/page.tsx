@@ -387,13 +387,15 @@ export default async function HomePage() {
         />
         <div className="review-grid">
           <article>
-            <Image
-              alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
-              className="review-image"
-              height={320}
-              src="/reviews/feedback-1.png"
-              width={240}
-            />
+            <div className="review-avatar">
+              <Image
+                alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
+                className="review-image"
+                height={320}
+                src="/reviews/feedback-1.png"
+                width={240}
+              />
+            </div>
             <span>Fiquei completamente encantada</span>
             <p>
               Cheguei sem muita expectativa e saí completamente apaixonada! A
@@ -407,13 +409,15 @@ export default async function HomePage() {
             </p>
           </article>
           <article>
-            <Image
-              alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
-              className="review-image"
-              height={320}
-              src="/reviews/feedback-2.png"
-              width={240}
-            />
+            <div className="review-avatar">
+              <Image
+                alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
+                className="review-image"
+                height={320}
+                src="/reviews/feedback-2.png"
+                width={240}
+              />
+            </div>
             <span>Qualidade e variedade impressionantes</span>
             <p>
               Melhor loja de perfumes que já visitei! A Conexão Perfumaria tem
@@ -421,17 +425,23 @@ export default async function HomePage() {
               amadeiradas e frescas. Testei vários e todos têm ótima projeção e
               duração na pele. Os preços são justos e o atendimento é
               profissional. Saí de lá com 3 perfumes e a certeza de que vou
-              voltar sempre. Recomendo demais para quem busca qualidade sem
-              cair em armadilhas de marcas famosas com preços absurdos.
+              voltar sempre. Recomendo demais para quem busca qualidade sem cair
+              em armadilhas de marcas famosas com preços absurdos.
             </p>
           </article>
           <article>
+            <div
+              aria-hidden="true"
+              className="review-avatar review-avatar-placeholder"
+            >
+              “
+            </div>
             <span>Excelência no atendimento</span>
             <p>
               Excelente loja! Atendimento nota 10, perfumes com ótima fixação e
               um ambiente super agradável. A Conexão Perfumaria se tornou minha
-              loja favorita. Já indiquei para várias amigas e todas amaram.
-              Vale muito a pena!
+              loja favorita. Já indiquei para várias amigas e todas amaram. Vale
+              muito a pena!
             </p>
           </article>
         </div>
