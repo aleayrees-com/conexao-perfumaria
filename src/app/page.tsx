@@ -382,29 +382,42 @@ export default async function HomePage() {
 
       <StoreSection>
         <SectionHeading
-          eyebrow="Avaliações reais"
+          eyebrow="Feedbacks recebidos de clientes"
           title="O que vende melhor é a confiança"
         />
         <div className="review-grid">
           <article>
-            <span>WhatsApp</span>
+            <span>Feedback 1 · Entusiástico e emocional · Avaliação: 5,0</span>
             <p>
-              Atendimento rápido, explicaram as diferenças e me ajudaram a
-              escolher um presente.
+              Cheguei sem muita expectativa e saí completamente apaixonada! A
+              Conexão Perfumaria é simplesmente mágica. Os perfumes são
+              incríveis, com fixação maravilhosa e cheiros sofisticados. A
+              vendedora me atendeu com tanta paciência que parecia que eu era a
+              única cliente da loja. Encontrei meu novo perfume assinatura lá e
+              já estou voltando para comprar mais. Se você quer se sentir
+              especial e bem cheirosa, esse é o lugar certo! Obrigada, Conexão,
+              vocês conquistaram meu coração.
             </p>
           </article>
           <article>
-            <span>Instagram</span>
+            <span>Feedback 2 · Qualidade e variedade · Avaliação: 5,0</span>
             <p>
-              Chegou bem embalado, cheiro maravilhoso e ainda veio com carinho
-              no detalhe.
+              Melhor loja de perfumes que já visitei! A Conexão Perfumaria tem
+              uma variedade impressionante, desde fragrâncias mais doces até as
+              amadeiradas e frescas. Testei vários e todos têm ótima projeção e
+              duração na pele. Os preços são justos e o atendimento é
+              profissional. Saí de lá com 3 perfumes e a certeza de que vou
+              voltar sempre. Recomendo demais para quem busca qualidade sem
+              cair em armadilhas de marcas famosas com preços absurdos.
             </p>
           </article>
           <article>
-            <span>Loja física</span>
+            <span>Feedback 3 · Curto e direto · Avaliação: 5,0</span>
             <p>
-              Gostei porque pude falar o estilo que eu queria e sair com uma
-              opção certeira.
+              Excelente loja! Atendimento nota 10, perfumes com ótima fixação e
+              um ambiente super agradável. A Conexão Perfumaria se tornou minha
+              loja favorita. Já indiquei para várias amigas e todas amaram.
+              Vale muito a pena!
             </p>
           </article>
         </div>
