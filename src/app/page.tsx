@@ -392,9 +392,41 @@ export default async function HomePage() {
                 alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
                 className="review-image"
                 height={320}
+                src="/reviews/feedback-2.png"
+                width={240}
+              />
+            </div>
+            <span>Qualidade e variedade impressionantes</span>
+            <p>
+              Melhor loja de perfumes que já visitei! A Conexão Perfumaria tem
+              uma variedade impressionante, desde fragrâncias mais doces até as
+              amadeiradas e frescas. Testei vários e todos têm ótima projeção e
+              duração na pele. Os preços são justos e o atendimento é
+              profissional. Saí de lá com 3 perfumes e a certeza de que vou
+              voltar sempre. Recomendo demais para quem busca qualidade sem cair
+              em armadilhas de marcas famosas com preços absurdos.
+            </p>
+          </article>
+          <article className="review-card-featured">
+            <div className="review-avatar">
+              <Image
+                alt="Thais Vasconcellos"
+                className="review-image"
+                height={320}
                 src="/reviews/feedback-1.png"
                 width={240}
               />
+            </div>
+            <div className="review-identity">
+              <strong>Thais Vasconcellos</strong>
+              <a
+                aria-label="Instagram de Thais Vasconcellos"
+                href="https://www.instagram.com/thaisrvv/"
+                rel="noreferrer"
+                target="_blank"
+              >
+                @thaisrvv
+              </a>
             </div>
             <span>Fiquei completamente encantada</span>
             <p>
@@ -413,30 +445,9 @@ export default async function HomePage() {
               <Image
                 alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
                 className="review-image"
-                height={320}
-                src="/reviews/feedback-2.png"
-                width={240}
-              />
-            </div>
-            <span>Qualidade e variedade impressionantes</span>
-            <p>
-              Melhor loja de perfumes que já visitei! A Conexão Perfumaria tem
-              uma variedade impressionante, desde fragrâncias mais doces até as
-              amadeiradas e frescas. Testei vários e todos têm ótima projeção e
-              duração na pele. Os preços são justos e o atendimento é
-              profissional. Saí de lá com 3 perfumes e a certeza de que vou
-              voltar sempre. Recomendo demais para quem busca qualidade sem cair
-              em armadilhas de marcas famosas com preços absurdos.
-            </p>
-          </article>
-          <article>
-            <div className="review-avatar">
-              <Image
-                alt="Cliente compartilhando sua experiência na Conexão Perfumaria"
-                className="review-image"
-                height={320}
-                src="/reviews/feedback-3.png"
-                width={240}
+                height={912}
+                src="/reviews/feedback-3-woman.jpg"
+                width={828}
               />
             </div>
             <span>Excelência no atendimento</span>

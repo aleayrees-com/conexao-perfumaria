@@ -3343,6 +3343,65 @@ body::before {
   box-shadow: 0 10px 24px rgba(54, 15, 74, 0.14);
 }
 
+.review-grid {
+  align-items: stretch;
+  padding-top: 32px;
+}
+
+.review-card-featured {
+  position: relative;
+  z-index: 1;
+  border-color: rgba(216, 168, 77, 0.58) !important;
+  background: rgba(255, 253, 249, 0.98) !important;
+  box-shadow: 0 28px 68px rgba(54, 15, 74, 0.16) !important;
+  transform: translateY(-32px);
+}
+
+.review-card-featured:hover {
+  transform: translateY(-36px) !important;
+}
+
+.review-card-featured .review-avatar {
+  width: 148px;
+  height: 148px;
+  border-color: #fff8e8;
+  box-shadow:
+    0 0 0 2px rgba(216, 168, 77, 0.56),
+    0 16px 34px rgba(54, 15, 74, 0.18);
+}
+
+.review-card-featured .review-image {
+  object-position: center;
+  transform: scale(1.28);
+  transform-origin: 80% 42%;
+}
+
+.review-identity {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  text-align: center;
+}
+
+.review-identity strong {
+  color: var(--ink);
+  font-size: 1.04rem;
+}
+
+.review-identity a {
+  color: var(--violet);
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.review-identity a:hover,
+.review-identity a:focus-visible {
+  color: var(--amber-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .review-grid span {
   color: var(--amber-dark);
   font-weight: 800;
@@ -3486,6 +3545,20 @@ body::before {
 
   .about-store {
     align-items: stretch;
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+    padding-top: 0;
+  }
+
+  .review-card-featured {
+    order: -1;
+    transform: none;
+  }
+
+  .review-card-featured:hover {
+    transform: translateY(-3px) !important;
   }
 }
 
