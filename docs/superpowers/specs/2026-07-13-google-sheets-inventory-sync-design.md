@@ -22,6 +22,7 @@ Make the client's Google Sheet the operational source of truth for variant inven
 - Header row: row 1.
 - Variant identity column: `B`, header `ID Variação`.
 - Inventory column: `J`, header `Unidades na loja`.
+- Product-link fallback column: `L`, header `Link do produto`.
 - The client may edit inventory in column `J`; names, SKUs, statuses, and prices are not synchronization inputs.
 - The sync fetches the native Google Sheets CSV export for the `Produtos` tab. The public read endpoint was verified to return HTTP 200 and CSV content.
 
@@ -29,18 +30,18 @@ The user-facing link opens the `Resumo` tab, but inventory synchronization must 
 
 ## Recommended Architecture
 
-### 1. Supabase Edge Function
+### 1. Direct PostgreSQL fetch
 
-Add a versioned Edge Function at `supabase/functions/sync-inventory` with one responsibility: download, parse, validate, and submit one inventory snapshot.
+The production project exposes the synchronous `http` extension, so PostgreSQL fetches the fixed Google Sheets `gviz` CSV endpoint directly. This removes the Edge Function deployment and Vault credential dependency while keeping the storefront unchanged.
 
-The function will:
+The database function `sync_inventory_from_google_sheet`:
 
-1. Fetch the `Produtos` tab as CSV.
-2. Resolve the required columns by normalized header text rather than fixed array offsets alone.
-3. Build rows containing only `nuvemshop_variant_id` and `stock`.
-4. Validate the complete snapshot before requesting any database write.
-5. Call one PostgreSQL RPC with the validated rows and a `dry_run` flag.
-6. Return compact counts for scanned, changed, unchanged, and rejected rows.
+1. Fetches only columns `B`, `J`, and `L` from the `Produtos` tab.
+2. Validates HTTP status, CSV content type, exact headers, IDs, stock values, links, and duplicates.
+3. Resolves a row by `ID Variação` first.
+4. When that ID is legacy or replaced, uses the link slug only if it maps to exactly one existing database variant.
+5. Calls the transactional snapshot RPC with a `dry_run` flag.
+6. Returns counts for scanned, changed, unchanged, and slug-fallback rows.
 
 ### 2. Transactional PostgreSQL RPC
 
@@ -50,7 +51,7 @@ The RPC will:
 
 - acquire a transaction-scoped advisory lock so scheduled runs cannot overlap;
 - reject duplicate variation IDs;
-- reject variation IDs that do not exist in `product_variants.nuvemshop_variant_id`;
+- reject variation IDs that neither exist directly nor have one unambiguous product-slug match;
 - compare incoming stock with current stock;
 - update only changed variants;
 - set variant `is_available` to `stock > 0`;
@@ -61,7 +62,7 @@ Rows missing from the spreadsheet snapshot will not be changed or set to zero.
 
 ### 3. Supabase Cron
 
-Create one Supabase Cron job using the schedule `*/5 * * * *`. The job invokes the Edge Function through `pg_net`. Invocation credentials are stored in Supabase Vault, not embedded in SQL or committed files.
+Create one Supabase Cron job using the schedule `*/5 * * * *`. The job directly invokes `sync_inventory_from_google_sheet(false)` as a database command, with no HTTP mutation endpoint or application credential.
 
 The Cron job remains disabled until the first dry run has been reviewed and a live one-off synchronization succeeds.
 
@@ -79,16 +80,17 @@ Logs must not contain credentials, authorization headers, or complete spreadshee
 
 ## Validation Rules
 
-The Edge Function must reject the complete run before writes when:
+The database function must reject the complete run before writes when:
 
 - the CSV request fails or does not return CSV;
-- either required header is missing or appears more than once;
+- any required header is missing or unexpected;
 - `ID Variação` is blank on a row that contains stock;
 - `ID Variação` is not a positive integer;
 - `Unidades na loja` is blank for a populated product row;
 - stock is not an integer or is negative;
 - the same variation ID appears more than once;
-- a variation ID is not present in Supabase.
+- a variation ID has no direct match and its product slug has zero or multiple variants;
+- two sheet rows resolve to the same database variant.
 
 Fully blank trailing rows are ignored. SKU and product name are informational and never used as fallback identifiers.
 
@@ -97,28 +99,25 @@ Fully blank trailing rows are ignored. SKU and product name are informational an
 - Fetch, parsing, or validation failure results in zero inventory writes.
 - RPC validation or database failure rolls back the complete inventory update.
 - A failed run is logged with a sanitized reason and will be retried by the next five-minute schedule.
-- The function returns a non-success HTTP status for operational failures so Edge Function and Cron monitoring expose them.
+- The function records an error result in `inventory_sync_runs`; PostgreSQL Cron history remains available in `cron.job_run_details`.
 - One failed run never changes storefront code, the local JSON snapshot, or unrelated product fields.
 
 ## Security
 
 - The spreadsheet is read-only to the synchronization process.
-- The Edge Function accepts only authenticated automation calls; it is not a public mutation endpoint.
-- Supabase secrets remain in Edge Function environment variables or Vault.
-- The secret/service key is never exposed to the browser or committed to the repository.
+- The synchronization functions are revoked from `public`, `anon`, and `authenticated` and granted only to `service_role`.
+- No service key, database URL, or sheet payload is embedded in logs or committed files.
 - Database writes use the narrow inventory RPC rather than general-purpose table mutation from the client.
 - The current spreadsheet sharing mode allows anyone with the link to read it. This is accepted for the CSV-fetch design; editor access remains separately controlled by Google Drive sharing.
 
 ## Testing
 
-### Unit tests
+### Contract tests
 
-- CSV parsing with quoted fields, accents, CRLF, and blank SKU values.
-- Header normalization and missing/duplicate header rejection.
-- Positive integer parsing for variation IDs and non-negative integer parsing for stock.
-- Duplicate ID rejection.
-- Blank trailing row handling.
-- Difference calculation and dry-run response shape.
+- Fixed spreadsheet, tab, selected columns, headers, and five-minute schedule.
+- Positive integer validation for variation IDs and non-negative integer validation for stock.
+- Direct-ID priority, single-variant slug fallback, duplicate-target rejection, and immutable identifiers.
+- Difference calculation, execution logging, and dry-run response shape.
 
 ### Database contract tests
 
@@ -132,17 +131,17 @@ Fully blank trailing rows are ignored. SKU and product name are informational an
 ### Integration verification
 
 1. Fetch the live `Produtos` CSV without modifying the sheet.
-2. Run the function locally in dry-run mode against the configured Supabase environment.
-3. Present the exact difference summary for approval.
-4. Execute one live synchronization and verify representative changed and unchanged variants.
-5. Verify storefront and checkout stock reads against Supabase.
-6. Enable the five-minute Cron job only after the live one-off verification passes.
+2. Run the database function in dry-run mode against the configured Supabase environment.
+3. Review the exact difference summary.
+4. Execute one live synchronization and immediately verify a second dry run reports zero changes.
+5. Enable the five-minute Cron job only after the live one-off verification passes.
+6. Confirm a real scheduled run in both `cron.job_run_details` and `inventory_sync_runs`.
 
 ## Rollout And Git Boundaries
 
 - Implementation occurs on the current work branch without touching `main`.
 - Existing unrelated working-tree changes are preserved and excluded from inventory-sync commits.
-- Local tests and dry-run evidence are shown before applying the production migration, deploying the Edge Function, or enabling Cron.
+- Local tests and dry-run evidence are captured before enabling Cron.
 - No push or merge to `main` occurs without explicit user approval.
 
 ## Out Of Scope

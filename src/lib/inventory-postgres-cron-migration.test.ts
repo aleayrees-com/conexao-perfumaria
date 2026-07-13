@@ -26,7 +26,9 @@ describe('inventory PostgreSQL Cron migration', () => {
     expect(sql).toContain('gid=257370644');
     expect(sql).toContain('tq=select%20B%2CJ');
     expect(sql).toContain('response_status <> 200');
-    expect(sql).toContain("position('text/csv' in lower(coalesce(response_content_type");
+    expect(sql).toContain(
+      "position('text/csv' in lower(coalesce(response_content_type",
+    );
   });
 
   it('validates and parses the two-column CSV before calling the atomic RPC', () => {
@@ -41,7 +43,9 @@ describe('inventory PostgreSQL Cron migration', () => {
     expect(sql).toContain('insert into public.inventory_sync_runs');
     expect(sql).toContain("status = 'success'");
     expect(sql).toContain("status = 'error'");
-    expect(sql).toContain('get stacked diagnostics error_message = message_text');
+    expect(sql).toContain(
+      'get stacked diagnostics error_message = message_text',
+    );
     expect(sql).toContain(
       'revoke all on function public.sync_inventory_from_google_sheet(boolean) from public, anon, authenticated',
     );

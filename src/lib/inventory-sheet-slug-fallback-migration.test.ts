@@ -40,8 +40,8 @@ describe('inventory sheet slug fallback migration', () => {
   });
 
   it('reports how many rows required the slug fallback', () => {
+    expect(sql).toContain('fallback_count integer;');
     expect(sql).toContain("'fallbackMatched', fallback_count");
-    expect(sql).toContain("'fallbackMatched', fallback_count");
-    expect(sql).toContain("metadata = metadata || jsonb_build_object(");
+    expect(sql).toContain('metadata = metadata || jsonb_build_object(');
   });
 });

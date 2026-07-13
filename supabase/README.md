@@ -7,12 +7,14 @@ Fundacao SQL para catalogo, pedidos e admin da Conexao Perfumaria.
 - `migrations/20260521210000_initial_catalog_admin.sql`
 - `migrations/20260614090000_admin_ecommerce_tracking.sql`
 - `migrations/20260713170000_inventory_sheet_sync.sql`
+- `migrations/20260713190000_inventory_sheet_postgres_cron.sql`
+- `migrations/20260713191000_inventory_sheet_slug_fallback.sql`
 
 A primeira cria as tabelas `categories`, `products`, `product_variants`, `product_images`, `customers`, `orders` e `order_items`.
 
 A segunda adiciona suporte ao admin/e-commerce: IDs publicos independentes da Nuvemshop, `admin_profiles`, `admin_audit_logs`, `order_events`, `tracking_events` e a RPC `refresh_product_stock`.
 
-A terceira adiciona a sincronizacao transacional do estoque da planilha, o historico `inventory_sync_runs` e as funcoes de agendamento do Cron.
+A terceira adiciona a sincronizacao transacional do estoque da planilha e o historico `inventory_sync_runs`. As duas seguintes conectam o PostgreSQL diretamente ao CSV do Google Sheets, configuram o Cron e adicionam a correspondencia segura por slug para IDs legados.
 
 Decisoes principais:
 
@@ -70,10 +72,11 @@ A fonte operacional e a aba `Produtos` da planilha Google nativa:
 - aba: `Produtos` (`sheetId` `257370644`);
 - identidade: `ID Variacao`;
 - quantidade: `Unidades na loja`.
+- fallback: `Link do produto`, somente quando o ID nao existe e o slug encontra exatamente uma variante.
 
-A Edge Function `sync-inventory` baixa o CSV publico, valida o snapshot completo e chama a RPC `sync_inventory_snapshot`. O site continua lendo somente o Supabase e nao precisa de alteracao.
+O proprio PostgreSQL baixa as colunas `B`, `J` e `L` pelo endpoint CSV do Google Sheets, valida o snapshot completo e chama a RPC atomica `sync_inventory_snapshot`. O site continua lendo somente o Supabase e nao precisa de alteracao, Edge Function ou segredo adicional.
 
-### Ordem de publicacao
+### Operacao
 
 1. Aplique as migrations com a conexao local configurada:
 
@@ -81,36 +84,19 @@ A Edge Function `sync-inventory` baixa o CSV publico, valida o snapshot completo
 npm run migrate:supabase
 ```
 
-2. Publique a Edge Function mantendo a verificacao JWT ativa:
+2. Compare a planilha com o banco sem gravar estoque:
 
-```powershell
-npx supabase functions deploy sync-inventory --project-ref nhbopjnibuxfpkslbawf
+```sql
+select public.sync_inventory_from_google_sheet(true);
 ```
 
-3. Execute o primeiro teste sem gravar estoque:
+3. Aplique uma sincronizacao manual validada:
 
-```powershell
-$headers = @{
-  Authorization = "Bearer $env:SUPABASE_SERVICE_ROLE_KEY"
-  apikey = $env:SUPABASE_SERVICE_ROLE_KEY
-  'Content-Type' = 'application/json'
-}
-
-Invoke-RestMethod `
-  -Method Post `
-  -Uri "$env:SUPABASE_URL/functions/v1/sync-inventory" `
-  -Headers $headers `
-  -Body '{"dryRun":true}'
+```sql
+select public.sync_inventory_from_google_sheet(false);
 ```
 
-4. Revise todas as diferencas. Somente depois execute uma sincronizacao real trocando o corpo para `{"dryRun":false}`.
-
-5. No Vault do Supabase, crie os secrets:
-
-- `inventory_sync_project_url`: URL do projeto Supabase;
-- `inventory_sync_service_role_key`: chave service role do projeto.
-
-6. Ative o agendamento de cinco minutos somente apos validar a execucao real:
+4. Ative ou recrie o agendamento de cinco minutos:
 
 ```sql
 select public.schedule_inventory_sync_cron();
@@ -124,4 +110,4 @@ Desative o Cron sem remover a funcao ou os dados:
 select public.unschedule_inventory_sync_cron();
 ```
 
-O historico fica em `public.inventory_sync_runs`. Nenhuma execucao deve registrar chaves, cabecalhos de autorizacao ou o CSV completo.
+O historico funcional fica em `public.inventory_sync_runs`; o historico do agendador fica em `cron.job_run_details`. Nenhuma execucao registra credenciais ou o CSV completo. Uma falha de download, cabecalho, valor, duplicidade ou correspondencia cancela todas as escritas daquela execucao.
