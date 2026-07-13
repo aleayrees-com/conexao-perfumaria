@@ -19,3 +19,4 @@ tsconfig.tsbuildinfo
 
 .vercel
 .env*
+.worktrees/
