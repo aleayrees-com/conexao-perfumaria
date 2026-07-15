@@ -81,19 +81,6 @@ function buildPromoSlides(
   );
   const slideInputs = [
     {
-      id: 'aniversario',
-      bracket: '2 anos de Conexão',
-      title: 'MÊS DE ANIVERSÁRIO',
-      tagline: 'Brindes, surpresas e sorteio durante todo o mês de junho.',
-      highlights: ['Dia dos Namorados', 'Compre e ganhe', 'Sorteio especial'],
-      imageAlt: 'Banner de aniversário de 2 anos da Conexão Perfumaria',
-      imageUrl: '/brand/conexao-anniversary-banner.jpeg',
-      layout: 'image',
-      searchLabel: 'Comprar agora',
-      searchHref: '/produtos?disponivel=1',
-      terms: ['presente', 'combo', 'kit', 'perfume', 'arabes', 'arabe'],
-    },
-    {
       id: 'historia',
       bracket: '11 anos de história',
       title: 'HISTÓRIA NA PERFUMARIA',
