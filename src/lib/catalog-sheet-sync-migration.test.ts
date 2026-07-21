@@ -9,6 +9,14 @@ const migrationPath = fileURLToPath(migrationUrl);
 const migrationSql = existsSync(migrationPath)
   ? readFileSync(migrationPath, 'utf8')
   : '';
+const cardPricingMigrationUrl = new URL(
+  '../../supabase/migrations/20260721120000_derive_card_price_from_pix.sql',
+  import.meta.url,
+);
+const cardPricingMigrationPath = fileURLToPath(cardPricingMigrationUrl);
+const cardPricingMigrationSql = existsSync(cardPricingMigrationPath)
+  ? readFileSync(cardPricingMigrationPath, 'utf8')
+  : '';
 
 describe('catalog sheet sync migration', () => {
   test('reads prices and stock from the configured Produtos sheet', () => {
@@ -47,6 +55,17 @@ describe('catalog sheet sync migration', () => {
     expect(migrationSql).toContain('scanned_count = sync_scanned_count');
     expect(migrationSql).not.toContain(
       'sync_catalog_from_google_sheet.scanned_count',
+    );
+  });
+});
+
+describe('automatic card pricing migration', () => {
+  test('grosses up PIX with the 1-day InfinitePay rate', () => {
+    expect(cardPricingMigrationSql).toContain(
+      'card_fee_basis_points integer not null default 701',
+    );
+    expect(cardPricingMigrationSql).toContain(
+      'ceil(pix_price_cents * 10000::numeric / (10000 - card_fee_basis_points))',
     );
   });
 });
