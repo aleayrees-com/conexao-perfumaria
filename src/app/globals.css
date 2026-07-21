@@ -4203,29 +4203,53 @@ body::before {
   }
 }
 
-/* Keep only the home promotion and its product boxes compact on desktop. */
+/* Desktop density keeps the storefront readable without oversized merchandising. */
 @media (min-width: 701px) {
+  .site-main {
+    width: min(1180px, calc(100% - 32px));
+  }
+
   .home-page .promo-hero {
-    margin: 18px 0 28px;
-    border-radius: 26px;
+    min-height: 0;
+    max-width: 980px;
+    margin: 18px auto 28px;
+    border-radius: 22px;
   }
 
   .home-page .promo-slide.image {
-    padding: 12px;
+    min-height: 0;
+    padding: 10px;
   }
 
   .home-page .promo-image-link {
-    height: clamp(280px, 30vw, 360px);
+    height: auto;
   }
 
   .home-page .promo-image-link img {
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .home-page .featured-section {
+    margin-inline: 0;
+    padding: 32px clamp(18px, 3vw, 32px) 38px;
+    border-radius: 24px;
+  }
+
+  .home-page .featured-section .section-heading {
+    gap: 16px;
+    margin-bottom: 18px;
+    padding-inline: 0;
+  }
+
+  .home-page .featured-section .section-heading h2 {
+    font-size: clamp(2rem, 3vw, 3.2rem);
+    line-height: 0.94;
   }
 
   .home-page .featured-section .product-grid {
-    grid-template-columns: repeat(auto-fit, minmax(190px, 250px));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 210px));
     justify-content: center;
   }
 
@@ -4242,7 +4266,7 @@ body::before {
   }
 
   .home-page .featured-section .product-card.editorial .product-card-body {
-    min-height: 164px;
+    min-height: 148px;
     gap: 8px;
     padding: 14px 16px 16px;
   }
@@ -4253,7 +4277,7 @@ body::before {
   }
 
   .home-page .featured-section .product-card.editorial .price-stack strong {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
   }
 
   .home-page .featured-section .product-card-link {

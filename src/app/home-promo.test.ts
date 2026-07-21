@@ -15,10 +15,14 @@ describe('banners promocionais da home', () => {
     expect(pageSource).toContain("id: 'historia'");
   });
 
-  it('compacta somente o banner e os cards de perfumes no desktop', () => {
-    expect(globalStyles).not.toContain('width: min(1180px, calc(100% - 40px))');
-    expect(globalStyles).toContain('height: clamp(280px, 30vw, 360px)');
+  it('reduz a escala da home sem cortar a arte do banner no desktop', () => {
+    expect(globalStyles).toContain('width: min(1180px, calc(100% - 32px))');
+    expect(globalStyles).toContain('max-width: 980px');
+    expect(globalStyles).toContain('height: auto');
     expect(globalStyles).toContain('aspect-ratio: 1 / 0.82');
-    expect(globalStyles).toContain('min-height: 164px');
+    expect(globalStyles).toContain('min-height: 148px');
+    expect(globalStyles).toMatch(
+      /\.home-page \.promo-image-link img \{\s+width: 100%;\s+height: auto;\s+object-fit: contain;/,
+    );
   });
 });
