@@ -254,12 +254,6 @@ export default async function HomePage() {
 
   return (
     <div className="home-page">
-      <div className="site-celebration-balloons" aria-hidden="true">
-        <span className="site-balloon site-balloon-one" />
-        <span className="site-balloon site-balloon-two" />
-        <span className="site-balloon site-balloon-three" />
-        <span className="site-balloon site-balloon-four" />
-      </div>
       <PromoCarousel slides={promoSlides} />
 
       <StoreSection variant="featured">

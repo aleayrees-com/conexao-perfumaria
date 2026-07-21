@@ -9,9 +9,10 @@ const globalStyles = readFileSync(
 );
 
 describe('banners promocionais da home', () => {
-  it('remove a campanha de aniversário e mantém o banner institucional', () => {
+  it('remove elementos da campanha e mantém o banner institucional', () => {
     expect(pageSource).not.toContain("id: 'aniversario'");
     expect(pageSource).not.toContain('/brand/conexao-anniversary-banner.jpeg');
+    expect(pageSource).not.toContain('site-celebration-balloons');
     expect(pageSource).toContain("id: 'historia'");
   });
 
