@@ -68,4 +68,26 @@ describe('automatic card pricing migration', () => {
       'ceil(pix_price_cents * 10000::numeric / (10000 - card_fee_basis_points))',
     );
   });
+
+  test('uses PIX as the only sheet price source', () => {
+    expect(cardPricingMigrationSql).toContain('select%20B%2CI%2CJ%2CL');
+    expect(cardPricingMigrationSql).not.toContain('select%20B%2CH%2CI%2CJ%2CL');
+    expect(cardPricingMigrationSql).toContain(
+      '"ID Variação","Preço PIX","Unidades na loja","Link do produto"',
+    );
+  });
+
+  test('rejects blank PIX values instead of deriving a three-percent discount', () => {
+    expect(cardPricingMigrationSql).toContain("'Preço PIX'");
+    expect(cardPricingMigrationSql).not.toContain(
+      'round(price_cents * 0.97)::integer',
+    );
+  });
+
+  test('keeps hourly scheduling and the manual sync entry point', () => {
+    expect(cardPricingMigrationSql).toContain("'0 * * * *'");
+    expect(cardPricingMigrationSql).toContain(
+      'select public.sync_catalog_from_google_sheet(false);',
+    );
+  });
 });
