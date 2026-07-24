@@ -4774,6 +4774,77 @@ body::before {
   font-size: 0.78rem;
 }
 
+.admin-image-upload-form,
+.admin-pagination,
+.admin-image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+
+.admin-image-upload-form {
+  margin-bottom: 16px;
+}
+
+.admin-image-upload-form label {
+  min-width: min(100%, 220px);
+}
+
+.admin-product-image-card {
+  overflow: hidden;
+  border: 1px solid #e6ebf0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.admin-product-image-card p {
+  margin: 0;
+  padding: 8px 10px;
+  color: #425466;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-image-actions {
+  padding: 0 8px 8px;
+}
+
+.admin-danger-button {
+  min-height: 36px;
+  border: 1px solid #e5a4a4;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #fff;
+  color: #9f1d1d;
+  font: inherit;
+  font-weight: 800;
+}
+
+.admin-pagination {
+  justify-content: center;
+  margin-top: 18px;
+  color: #425466;
+  font-weight: 700;
+}
+
+.admin-inline-form output,
+.admin-form-grid output {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid #d8e0e8;
+  border-radius: 6px;
+  padding: 0 11px;
+  background: #f8fafc;
+  color: #425466;
+}
+
+.admin-empty-state {
+  margin: 0;
+  color: #667789;
+}
+
 .admin-save-bar {
   position: sticky;
   bottom: 0;

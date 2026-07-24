@@ -11,7 +11,7 @@ export default async function AdminOrdersPage() {
       <div className="admin-heading">
         <div>
           <p>Operação</p>
-          <h1>Pedidos</h1>
+          <h1>Vendas e pedidos</h1>
         </div>
       </div>
 

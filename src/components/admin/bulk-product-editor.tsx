@@ -7,6 +7,7 @@ import {
   applyMoneyOperation,
   type BulkMoneyMode,
 } from '@/lib/admin-product-bulk';
+import { calculateCardPriceCents } from '@/lib/admin-pricing';
 
 import {
   applyBulkProductAction,
@@ -44,7 +45,7 @@ type BulkOperation =
   | 'adjust_stock'
   | 'set_availability';
 
-type MoneyField = 'price' | 'pix' | 'compare';
+type MoneyField = 'pix' | 'compare';
 
 function normalizeText(value: string): string {
   return value
@@ -80,7 +81,7 @@ function getMoneyFieldValue(
   field: MoneyField,
 ): number | null {
   if (field === 'pix') {
-    return product.pixPriceCents;
+    return product.pixPriceCents ?? product.priceCents;
   }
 
   if (field === 'compare') {
@@ -128,6 +129,12 @@ function getPreviewText({
       value: moneyInputToValue(moneyMode, moneyValue),
     });
 
+    if (moneyField === 'pix') {
+      return `PIX ${centsToMoney(current)} -> ${centsToMoney(next)} · cartão ${centsToMoney(
+        calculateCardPriceCents(next ?? 0),
+      )}`;
+    }
+
     return `${centsToMoney(current)} -> ${centsToMoney(next)}`;
   }
 
@@ -162,7 +169,7 @@ export function BulkProductEditor({
   const [operation, setOperation] = useState<BulkOperation>('adjust_price');
   const [statusValue, setStatusValue] = useState('active');
   const [categoryValue, setCategoryValue] = useState('');
-  const [moneyField, setMoneyField] = useState<MoneyField>('price');
+  const [moneyField, setMoneyField] = useState<MoneyField>('pix');
   const [moneyMode, setMoneyMode] = useState<BulkMoneyMode>('set');
   const [moneyValue, setMoneyValue] = useState('');
   const [stockMode, setStockMode] = useState('set');
@@ -225,11 +232,13 @@ export function BulkProductEditor({
       <section className="admin-panel admin-bulk-panel admin-bulk-value-guide">
         <div>
           <p>Fluxo recomendado</p>
-          <h2>Ajuste valores com revisão antes de salvar no catálogo.</h2>
+          <h2>
+            Ajuste o PIX; o cartão é recalculado antes de salvar no catálogo.
+          </h2>
         </div>
         <ol>
           <li>Filtre e selecione os produtos.</li>
-          <li>Escolha se vai alterar preço, PIX, estoque ou status.</li>
+          <li>Escolha se vai alterar PIX, comparação, estoque ou status.</li>
           <li>Confira a prévia e digite APLICAR para confirmar.</li>
         </ol>
       </section>
@@ -320,8 +329,9 @@ export function BulkProductEditor({
               <span>
                 <strong>{product.name}</strong>
                 <small>
-                  {product.categoryName} · {product.status} ·{' '}
-                  {centsToMoney(product.priceCents)} · {product.totalStock} un.
+                  {product.categoryName} · {product.status} · PIX{' '}
+                  {centsToMoney(product.pixPriceCents ?? product.priceCents)} ·{' '}
+                  {product.totalStock} un.
                 </small>
               </span>
             </label>
@@ -350,7 +360,7 @@ export function BulkProductEditor({
             >
               <option value="set_status">Alterar status</option>
               <option value="set_category">Alterar categoria</option>
-              <option value="adjust_price">Ajustar valores/preços</option>
+              <option value="adjust_price">Ajustar PIX e valores</option>
               <option value="adjust_stock">Ajustar estoque</option>
               <option value="set_availability">Disponibilidade</option>
             </select>
@@ -400,8 +410,7 @@ export function BulkProductEditor({
                   }
                   value={moneyField}
                 >
-                  <option value="price">Preço de venda</option>
-                  <option value="pix">Preço PIX</option>
+                  <option value="pix">Preço PIX (cartão automático)</option>
                   <option value="compare">Preço de comparação</option>
                 </select>
               </label>
@@ -419,7 +428,9 @@ export function BulkProductEditor({
                   <option value="decrease_percent">Reduzir %</option>
                   <option value="increase_amount">Aumentar R$</option>
                   <option value="decrease_amount">Reduzir R$</option>
-                  <option value="clear">Limpar</option>
+                  {moneyField === 'compare' ? (
+                    <option value="clear">Limpar</option>
+                  ) : null}
                 </select>
               </label>
               <label>
