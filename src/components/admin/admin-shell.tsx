@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { logoutAdminAction } from '@/app/login/actions';
 
@@ -17,6 +20,8 @@ export function AdminShell({
 }: {
   readonly children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
@@ -24,11 +29,24 @@ export function AdminShell({
           Conexão Admin
         </Link>
         <nav>
-          {navItems.map((item) => (
-            <Link href={item.href} key={item.href}>
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isCurrent =
+              item.href === '/admin'
+                ? pathname === item.href
+                : pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
+
+            return (
+              <Link
+                aria-current={isCurrent ? 'page' : undefined}
+                className={isCurrent ? 'is-current' : undefined}
+                href={item.href}
+                key={item.href}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
         <Link className="admin-store-link" href="/">
           Ver loja

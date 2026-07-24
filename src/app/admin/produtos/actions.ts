@@ -8,7 +8,9 @@ import {
   revalidateStorefrontCatalog,
 } from '@/lib/admin-data';
 import { requireAdmin } from '@/lib/admin-auth';
+import { resolveAdminProductReturnPath } from '@/lib/admin-pagination';
 import { calculateCardPriceCents } from '@/lib/admin-pricing';
+import { createAdminPriceUpdateIds } from '@/lib/admin-quick-prices';
 import { createCatalogSlug } from '@/lib/catalog-slug';
 
 function readString(formData: FormData, key: string): string {
@@ -105,7 +107,44 @@ export async function updateProductQuickAction(
   }
 
   revalidateStorefrontCatalog();
-  redirect('/admin/produtos');
+  redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
+}
+
+export async function updateProductPricesAction(
+  formData: FormData,
+): Promise<void> {
+  await requireAdmin();
+
+  const productIds = createAdminPriceUpdateIds(
+    formData.getAll('dirtyProductId').map(String),
+  );
+
+  if (productIds.length === 0) {
+    redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
+  }
+
+  const client = createAdminClient();
+  const updates = await Promise.all(
+    productIds.map((productId) => {
+      const pixPriceCents = readMoneyCents(formData, `pixPrice:${productId}`);
+
+      return client
+        .from('products')
+        .update({
+          price_cents: calculateCardPriceCents(pixPriceCents),
+          pix_price_cents: pixPriceCents,
+        })
+        .eq('id', productId);
+    }),
+  );
+  const failure = updates.find((update) => update.error)?.error;
+
+  if (failure) {
+    throw new Error(`Falha ao atualizar os preços: ${failure.message}`);
+  }
+
+  revalidateStorefrontCatalog();
+  redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
 }
 
 export async function updateProductDetailAction(
