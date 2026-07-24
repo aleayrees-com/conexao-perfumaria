@@ -6,13 +6,19 @@ import {
   createAdminProductPageHref,
   createAdminProductPaginationPages,
 } from '@/lib/admin-pagination';
-import { createAdminProductPage } from '@/lib/admin-product-page';
+import {
+  createAdminProductPage,
+  resolveAdminProductSortDirection,
+  resolveAdminProductSortField,
+} from '@/lib/admin-product-page';
 import { summarizeAdminPricing } from '@/lib/admin-pricing';
 import { formatMoney } from '@/lib/money';
 
 interface AdminProductsPageProps {
   readonly searchParams?: Promise<{
     readonly busca?: string;
+    readonly direcao?: string;
+    readonly ordem?: string;
     readonly pagina?: string;
     readonly status?: string;
   }>;
@@ -25,6 +31,10 @@ export default async function AdminProductsPage({
   const products = await listAdminProducts();
   const searchTerm = resolvedSearchParams?.busca ?? '';
   const statusFilter = resolvedSearchParams?.status ?? '';
+  const sortField = resolveAdminProductSortField(resolvedSearchParams?.ordem);
+  const sortDirection = resolveAdminProductSortDirection(
+    resolvedSearchParams?.direcao,
+  );
   const filteredProducts = products.filter((product) => {
     const matchesStatus = statusFilter ? product.status === statusFilter : true;
 
@@ -34,6 +44,8 @@ export default async function AdminProductsPage({
     page: Number.parseInt(resolvedSearchParams?.pagina ?? '1', 10),
     pageSize: 25,
     searchTerm,
+    sortDirection,
+    sortField,
   });
   const pricingSummary = summarizeAdminPricing(productPage.items);
   const paginationPages = createAdminProductPaginationPages(
@@ -43,6 +55,8 @@ export default async function AdminProductsPage({
     createAdminProductPageHref({
       page,
       searchTerm,
+      sortDirection,
+      sortField,
       statusFilter,
     });
   const currentCatalogHref = createPageHref(productPage.page);
@@ -91,6 +105,8 @@ export default async function AdminProductsPage({
       </section>
 
       <form className="admin-catalog-filters">
+        <input name="ordem" type="hidden" value={sortField} />
+        <input name="direcao" type="hidden" value={sortDirection} />
         <label>
           <span>Buscar</span>
           <input
@@ -124,6 +140,8 @@ export default async function AdminProductsPage({
         <ProductPriceTable
           products={productPage.items}
           returnTo={currentCatalogHref}
+          sortDirection={sortDirection}
+          sortField={sortField}
         />
       )}
 

@@ -21,9 +21,11 @@ describe('createAdminProductPageHref', () => {
         page: 12,
         searchTerm: 'óleo & âmbar',
         statusFilter: 'active',
+        sortDirection: 'desc',
+        sortField: 'stock',
       }),
     ).toBe(
-      '/admin/produtos?busca=%C3%B3leo+%26+%C3%A2mbar&status=active&pagina=12',
+      '/admin/produtos?busca=%C3%B3leo+%26+%C3%A2mbar&status=active&ordem=stock&direcao=desc&pagina=12',
     );
   });
 });

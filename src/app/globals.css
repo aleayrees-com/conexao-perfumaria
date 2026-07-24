@@ -4597,6 +4597,26 @@ body::before {
   padding: 10px 11px;
 }
 
+.admin-form-auto-note {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #dac5e2;
+  border-radius: 7px;
+  background: #fbf7fc;
+  color: #5c3766;
+  font-size: 0.82rem;
+}
+
+.admin-form-auto-note strong {
+  color: #68257b;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .admin-table-wrap {
   overflow-x: auto;
 }
@@ -6795,6 +6815,48 @@ body::before {
   letter-spacing: 0.07em;
   text-align: left;
   text-transform: uppercase;
+}
+
+.admin-catalog-table th.admin-sortable-header {
+  padding: 0;
+}
+
+.admin-sort-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 13px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.admin-sort-button:hover,
+.admin-sort-button:focus-visible {
+  background: #f1e8f5;
+  color: #6c287d;
+  outline: none;
+}
+
+.admin-sort-button.is-active {
+  color: #642476;
+}
+
+.admin-sort-indicator {
+  min-width: 14px;
+  color: #8d50a1;
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .admin-catalog-table td {

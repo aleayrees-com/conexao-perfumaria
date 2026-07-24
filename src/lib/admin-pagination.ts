@@ -1,6 +1,13 @@
+import type {
+  AdminProductSortDirection,
+  AdminProductSortField,
+} from './admin-product-page';
+
 export interface AdminProductPageHrefInput {
   readonly page: number;
   readonly searchTerm: string;
+  readonly sortDirection?: AdminProductSortDirection;
+  readonly sortField?: AdminProductSortField;
   readonly statusFilter: string;
 }
 
@@ -27,6 +34,8 @@ export function createAdminProductPageHref(
 
   if (input.searchTerm) query.set('busca', input.searchTerm);
   if (input.statusFilter) query.set('status', input.statusFilter);
+  if (input.sortField) query.set('ordem', input.sortField);
+  if (input.sortDirection) query.set('direcao', input.sortDirection);
   query.set('pagina', String(input.page));
 
   return `/admin/produtos?${query.toString()}`;
