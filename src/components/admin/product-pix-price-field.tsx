@@ -9,6 +9,7 @@ interface ProductPixPriceFieldProps {
   readonly defaultPixPriceCents: number;
   readonly inputName: string;
   readonly label?: string;
+  readonly onPixPriceCentsChange?: (pixPriceCents: number) => void;
 }
 
 function readPriceCents(value: string): number {
@@ -23,6 +24,7 @@ export function ProductPixPriceField({
   defaultPixPriceCents,
   inputName,
   label = 'Preço PIX',
+  onPixPriceCentsChange,
 }: ProductPixPriceFieldProps) {
   const [pixValue, setPixValue] = useState(
     (defaultPixPriceCents / 100).toFixed(2),
@@ -39,7 +41,12 @@ export function ProductPixPriceField({
           inputMode="decimal"
           min="0"
           name={inputName}
-          onChange={(event) => setPixValue(event.target.value)}
+          onChange={(event) => {
+            const nextValue = event.target.value;
+
+            setPixValue(nextValue);
+            onPixPriceCentsChange?.(readPriceCents(nextValue));
+          }}
           required
           step="0.01"
           type="number"

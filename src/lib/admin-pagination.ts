@@ -31,3 +31,14 @@ export function createAdminProductPageHref(
 
   return `/admin/produtos?${query.toString()}`;
 }
+
+/**
+ * Restricts a post-save redirect to the product catalog.
+ *
+ * @example resolveAdminProductReturnPath('/admin/produtos?pagina=2')
+ */
+export function resolveAdminProductReturnPath(value: string): string {
+  return value === '/admin/produtos' || value.startsWith('/admin/produtos?')
+    ? value
+    : '/admin/produtos';
+}

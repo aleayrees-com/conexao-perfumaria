@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   createAdminProductPageHref,
   createAdminProductPaginationPages,
+  resolveAdminProductReturnPath,
 } from './admin-pagination';
 
 describe('createAdminProductPaginationPages', () => {
@@ -23,6 +24,17 @@ describe('createAdminProductPageHref', () => {
       }),
     ).toBe(
       '/admin/produtos?busca=%C3%B3leo+%26+%C3%A2mbar&status=active&pagina=12',
+    );
+  });
+});
+
+describe('resolveAdminProductReturnPath', () => {
+  test('keeps a catalog return path and rejects an external destination', () => {
+    expect(
+      resolveAdminProductReturnPath('/admin/produtos?status=active&pagina=3'),
+    ).toBe('/admin/produtos?status=active&pagina=3');
+    expect(resolveAdminProductReturnPath('https://example.com')).toBe(
+      '/admin/produtos',
     );
   });
 });
