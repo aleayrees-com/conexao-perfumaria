@@ -84,7 +84,7 @@ function isMissingShippingColumnError(error: {
 export async function updateProductQuickAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const productId = readString(formData, 'productId');
   const client = createAdminClient();
@@ -109,6 +109,13 @@ export async function updateProductQuickAction(
     throw new Error(response.error.message);
   }
 
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_quick_updated',
+    entityType: 'products',
+    entityId: productId,
+    metadata: { pixPriceCents, status },
+  });
   revalidateStorefrontCatalog();
   redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
 }
@@ -116,7 +123,7 @@ export async function updateProductQuickAction(
 export async function updateProductPricesAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const productIds = createAdminPriceUpdateIds(
     formData.getAll('dirtyProductId').map(String),
@@ -127,10 +134,12 @@ export async function updateProductPricesAction(
   }
 
   const client = createAdminClient();
+  const priceChanges = productIds.map((productId) => ({
+    productId,
+    pixPriceCents: readMoneyCents(formData, `pixPrice:${productId}`),
+  }));
   const updates = await Promise.all(
-    productIds.map((productId) => {
-      const pixPriceCents = readMoneyCents(formData, `pixPrice:${productId}`);
-
+    priceChanges.map(({ productId, pixPriceCents }) => {
       return client
         .from('products')
         .update({
@@ -146,6 +155,12 @@ export async function updateProductPricesAction(
     throw new Error(`Falha ao atualizar os preços: ${failure.message}`);
   }
 
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_prices_updated',
+    entityType: 'products',
+    metadata: { priceChanges },
+  });
   revalidateStorefrontCatalog();
   redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
 }
@@ -153,7 +168,7 @@ export async function updateProductPricesAction(
 export async function updateProductDetailAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const productId = readString(formData, 'productId');
   const status = readStatus(readString(formData, 'status'));
@@ -241,12 +256,24 @@ export async function updateProductDetailAction(
   }
 
   await client.rpc('refresh_product_stock', { target_product_id: productId });
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_updated',
+    entityType: 'products',
+    entityId: productId,
+    metadata: {
+      name: productUpdate.name,
+      pixPriceCents,
+      status,
+      variantIds,
+    },
+  });
   revalidateStorefrontCatalog();
   redirect(`/admin/produtos/${productId}`);
 }
 
 export async function createProductAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const name = readString(formData, 'name');
 
@@ -306,6 +333,7 @@ export async function createProductAction(formData: FormData): Promise<void> {
   }
 
   await insertAdminAuditLog(client, {
+    actor,
     action: 'product_created',
     entityType: 'products',
     entityId: productResponse.data.id,

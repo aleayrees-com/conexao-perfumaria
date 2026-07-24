@@ -10,7 +10,7 @@ export default async function AdminLayout({
 }: {
   readonly children: React.ReactNode;
 }) {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell actor={actor}>{children}</AdminShell>;
 }

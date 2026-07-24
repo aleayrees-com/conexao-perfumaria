@@ -129,7 +129,7 @@ async function assignNextProductImageAsPrimary(
 export async function uploadProductImagesAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const productId = readActionString(formData, 'productId');
   const images = readUploadedImageFiles(formData);
@@ -174,6 +174,7 @@ export async function uploadProductImagesAction(
   }
 
   await insertAdminAuditLog(client, {
+    actor,
     action: 'product_images_uploaded',
     entityType: 'products',
     entityId: productId,
@@ -185,7 +186,7 @@ export async function uploadProductImagesAction(
 export async function setPrimaryProductImageAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const imageId = readActionString(formData, 'imageId');
   const productId = readActionString(formData, 'productId');
@@ -213,13 +214,20 @@ export async function setPrimaryProductImageAction(
     );
   }
 
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_image_primary_set',
+    entityType: 'product_images',
+    entityId: imageId,
+    metadata: { productId },
+  });
   await refreshProductEditor(productId);
 }
 
 export async function moveProductImageAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const imageId = readActionString(formData, 'imageId');
   const productId = readActionString(formData, 'productId');
@@ -262,13 +270,20 @@ export async function moveProductImageAction(
     throw new Error(`Falha ao salvar a ordem das imagens: ${failure.message}`);
   }
 
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_image_reordered',
+    entityType: 'product_images',
+    entityId: imageId,
+    metadata: { direction, productId },
+  });
   await refreshProductEditor(productId);
 }
 
 export async function deleteProductImageAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const imageId = readActionString(formData, 'imageId');
   const productId = readActionString(formData, 'productId');
@@ -314,5 +329,12 @@ export async function deleteProductImageAction(
     }
   }
 
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_image_deleted',
+    entityType: 'product_images',
+    entityId: imageId,
+    metadata: { productId },
+  });
   await refreshProductEditor(productId);
 }

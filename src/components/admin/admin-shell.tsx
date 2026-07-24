@@ -15,12 +15,24 @@ const navItems = [
   { href: '/admin/estatisticas', label: 'Estatísticas' },
 ] as const;
 
+const ownerNavItem = { href: '/admin/acessos', label: 'Acessos' } as const;
+
+interface AdminShellActor {
+  readonly displayName: string;
+  readonly email: string;
+  readonly role: 'owner' | 'admin' | 'operator';
+}
+
 export function AdminShell({
+  actor,
   children,
 }: {
+  readonly actor: AdminShellActor;
   readonly children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const visibleNavItems =
+    actor.role === 'owner' ? [...navItems, ownerNavItem] : navItems;
 
   return (
     <div className="admin-shell">
@@ -29,7 +41,7 @@ export function AdminShell({
           Conexão Admin
         </Link>
         <nav>
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isCurrent =
               item.href === '/admin'
                 ? pathname === item.href
@@ -54,12 +66,20 @@ export function AdminShell({
       </aside>
       <div className="admin-main">
         <header className="admin-topbar">
-          <span>Operação da loja</span>
-          <form action={logoutAdminAction}>
-            <button className="admin-ghost-button" type="submit">
-              Sair
-            </button>
-          </form>
+          <div>
+            <span className="admin-topbar-kicker">Operação da loja</span>
+            <strong>{actor.displayName}</strong>
+          </div>
+          <div className="admin-topbar-actions">
+            <Link className="admin-ghost-button" href="/admin/perfil">
+              Minha conta
+            </Link>
+            <form action={logoutAdminAction}>
+              <button className="admin-ghost-button" type="submit">
+                Sair
+              </button>
+            </form>
+          </div>
         </header>
         {children}
       </div>

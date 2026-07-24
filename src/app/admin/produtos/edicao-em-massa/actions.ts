@@ -204,7 +204,7 @@ async function refreshTouchedProducts(
 export async function applyBulkProductAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   if (readString(formData, 'confirmText') !== 'APLICAR') {
     throw new Error('Digite APLICAR para confirmar a edição em escala.');
@@ -351,6 +351,7 @@ export async function applyBulkProductAction(
   }
 
   await insertAdminAuditLog(client, {
+    actor,
     action: 'bulk_product_update',
     entityType: 'products',
     metadata: {
@@ -367,7 +368,7 @@ export async function applyBulkProductAction(
 export async function importProductCsvAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   if (readString(formData, 'confirmImportText') !== 'IMPORTAR') {
     throw new Error('Digite IMPORTAR para confirmar a importação CSV.');
@@ -485,6 +486,7 @@ export async function importProductCsvAction(
 
   await refreshTouchedProducts(Array.from(touchedProductIds));
   await insertAdminAuditLog(client, {
+    actor,
     action: 'bulk_product_csv_import',
     entityType: 'products',
     metadata: {

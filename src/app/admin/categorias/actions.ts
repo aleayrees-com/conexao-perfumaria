@@ -30,7 +30,7 @@ async function finishCategoryUpdate(categoryId: string): Promise<void> {
 }
 
 export async function createCategoryAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const name = readCategoryName(formData);
   const client = createAdminClient();
@@ -51,6 +51,7 @@ export async function createCategoryAction(formData: FormData): Promise<void> {
   }
 
   await insertAdminAuditLog(client, {
+    actor,
     action: 'category_created',
     entityType: 'categories',
     entityId: response.data.id,
@@ -60,7 +61,7 @@ export async function createCategoryAction(formData: FormData): Promise<void> {
 }
 
 export async function updateCategoryAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const categoryId = readCategoryField(formData, 'categoryId');
   const name = readCategoryName(formData);
@@ -81,6 +82,7 @@ export async function updateCategoryAction(formData: FormData): Promise<void> {
   }
 
   await insertAdminAuditLog(client, {
+    actor,
     action: 'category_updated',
     entityType: 'categories',
     entityId: categoryId,

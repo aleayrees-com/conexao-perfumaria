@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
-import { createAdminClient } from '@/lib/admin-data';
+import { createAdminClient, insertAdminAuditLog } from '@/lib/admin-data';
 import { requireAdmin } from '@/lib/admin-auth';
 import { sendMetaCapiEvent } from '@/lib/meta-capi';
 
@@ -168,7 +168,7 @@ async function sendPurchaseIfNeeded({
 }
 
 export async function updateOrderAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const orderId = readString(formData, 'orderId');
   const orderNumber = readString(formData, 'orderNumber');
@@ -218,8 +218,22 @@ export async function updateOrderAction(formData: FormData): Promise<void> {
   await client.from('order_events').insert({
     order_id: orderId,
     event_type: 'admin_update',
-    actor: 'admin',
+    actor: actor.displayName,
     metadata: { status, paymentStatus, shippingLabelUrl, trackingCode },
+  });
+
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'order_updated',
+    entityType: 'orders',
+    entityId: orderId,
+    metadata: {
+      orderNumber,
+      paymentStatus,
+      shippingLabelUrl,
+      status,
+      trackingCode,
+    },
   });
 
   if (paymentStatus === 'paid') {
