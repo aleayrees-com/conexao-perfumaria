@@ -4822,10 +4822,64 @@ body::before {
 }
 
 .admin-pagination {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
   margin-top: 18px;
   color: #425466;
   font-weight: 700;
+}
+
+.admin-pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.admin-pagination-page,
+.admin-pagination-boundary {
+  display: inline-grid;
+  min-width: 40px;
+  min-height: 40px;
+  place-items: center;
+  border: 1px solid #c8d0dc;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #344054;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.admin-pagination-page:hover,
+.admin-pagination-page:focus-visible,
+.admin-pagination-boundary:hover,
+.admin-pagination-boundary:focus-visible {
+  border-color: #6b2f7b;
+  background: #f8f0fa;
+  color: #4a1d5a;
+}
+
+.admin-pagination-page[aria-current='page'] {
+  border-color: #6b2f7b;
+  background: #6b2f7b;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(107, 47, 123, 0.2);
+}
+
+.admin-pagination-boundary.is-disabled {
+  border-color: #e0e5ed;
+  background: #f7f8fa;
+  color: #98a2b3;
+  cursor: not-allowed;
 }
 
 .admin-inline-form output,

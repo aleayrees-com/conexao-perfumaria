@@ -2,6 +2,10 @@ import Link from 'next/link';
 
 import { ProductPixPriceField } from '@/components/admin/product-pix-price-field';
 import { listAdminProducts } from '@/lib/admin-data';
+import {
+  createAdminProductPageHref,
+  createAdminProductPaginationPages,
+} from '@/lib/admin-pagination';
 import { createAdminProductPage } from '@/lib/admin-product-page';
 import {
   calculateCardPriceCents,
@@ -37,6 +41,15 @@ export default async function AdminProductsPage({
     searchTerm,
   });
   const pricingSummary = summarizeAdminPricing(productPage.items);
+  const paginationPages = createAdminProductPaginationPages(
+    productPage.totalPages,
+  );
+  const createPageHref = (page: number) =>
+    createAdminProductPageHref({
+      page,
+      searchTerm,
+      statusFilter,
+    });
 
   return (
     <section className="admin-page admin-products-page">
@@ -224,23 +237,46 @@ export default async function AdminProductsPage({
         <nav aria-label="Paginação de produtos" className="admin-pagination">
           {productPage.page > 1 ? (
             <Link
-              className="admin-ghost-button"
-              href={`/admin/produtos?busca=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}&pagina=${productPage.page - 1}`}
+              className="admin-pagination-boundary"
+              href={createPageHref(productPage.page - 1)}
             >
               Anterior
             </Link>
-          ) : null}
-          <span>
-            Página {productPage.page} de {productPage.totalPages}
-          </span>
+          ) : (
+            <span
+              aria-disabled="true"
+              className="admin-pagination-boundary is-disabled"
+            >
+              Anterior
+            </span>
+          )}
+          <div className="admin-pagination-pages">
+            {paginationPages.map((page) => (
+              <Link
+                aria-current={page === productPage.page ? 'page' : undefined}
+                className="admin-pagination-page"
+                href={createPageHref(page)}
+                key={page}
+              >
+                {page}
+              </Link>
+            ))}
+          </div>
           {productPage.page < productPage.totalPages ? (
             <Link
-              className="admin-ghost-button"
-              href={`/admin/produtos?busca=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}&pagina=${productPage.page + 1}`}
+              className="admin-pagination-boundary"
+              href={createPageHref(productPage.page + 1)}
             >
               Próxima
             </Link>
-          ) : null}
+          ) : (
+            <span
+              aria-disabled="true"
+              className="admin-pagination-boundary is-disabled"
+            >
+              Próxima
+            </span>
+          )}
         </nav>
       ) : null}
     </section>
