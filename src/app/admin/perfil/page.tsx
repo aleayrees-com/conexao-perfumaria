@@ -1,3 +1,4 @@
+import { PasswordField } from '@/components/admin/password-field';
 import { requireAdmin } from '@/lib/admin-auth';
 
 import { updateOwnAdminPasswordAction } from './actions';
@@ -30,37 +31,28 @@ export default async function AdminProfilePage() {
             <h2>Atualizar senha</h2>
           </div>
         </div>
-        <label>
-          Senha atual
-          <input
-            autoComplete="current-password"
-            name="currentPassword"
-            required
-            type="password"
-          />
-        </label>
-        <label>
-          Nova senha
-          <input
-            autoComplete="new-password"
-            maxLength={15}
-            minLength={8}
-            name="nextPassword"
-            required
-            type="password"
-          />
-        </label>
-        <label>
-          Confirmar nova senha
-          <input
-            autoComplete="new-password"
-            maxLength={15}
-            minLength={8}
-            name="passwordConfirmation"
-            required
-            type="password"
-          />
-        </label>
+        <PasswordField
+          autoComplete="current-password"
+          label="Senha atual"
+          name="currentPassword"
+          required
+        />
+        <PasswordField
+          autoComplete="new-password"
+          label="Nova senha"
+          maxLength={15}
+          minLength={8}
+          name="nextPassword"
+          required
+        />
+        <PasswordField
+          autoComplete="new-password"
+          label="Confirmar nova senha"
+          maxLength={15}
+          minLength={8}
+          name="passwordConfirmation"
+          required
+        />
         <p className="admin-field-note">
           Use 8 a 15 caracteres, com letras, número e símbolo.
         </p>

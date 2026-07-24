@@ -6,7 +6,11 @@ import { unstable_noStore } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { isAdminProfileActive, type AdminRole } from '@/lib/admin-access';
+import {
+  canCreateAdminAccount,
+  isAdminProfileActive,
+  type AdminRole,
+} from '@/lib/admin-access';
 import {
   countAdminProfiles,
   createAdminClient,
@@ -153,8 +157,8 @@ async function readSessionPayload(): Promise<AdminSessionPayload | null> {
 
 async function provisionAdminAccount(
   input: NewAdminAccount,
+  client = createAdminClient(),
 ): Promise<AdminProfile> {
-  const client = createAdminClient();
   const email = normalizeAdminEmail(input.email);
   const response = await client.auth.admin.createUser({
     email,
@@ -304,7 +308,14 @@ export async function createInitialAdmin(
 export async function createAdminAccount(
   input: NewAdminAccount,
 ): Promise<AdminProfile> {
-  return provisionAdminAccount(input);
+  const client = createAdminClient();
+  const accountCount = await countAdminProfiles(client);
+
+  if (!canCreateAdminAccount(accountCount)) {
+    throw new Error('O limite de 3 acessos administrativos já foi atingido.');
+  }
+
+  return provisionAdminAccount(input, client);
 }
 
 /**

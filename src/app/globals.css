@@ -7401,3 +7401,50 @@ body::before {
     grid-column: 2;
   }
 }
+
+.admin-password-control {
+  position: relative;
+  display: block !important;
+}
+
+.admin-password-control input {
+  width: 100%;
+  padding-right: 52px !important;
+}
+
+.admin-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  padding: 0;
+  transform: translateY(-50%);
+  background: transparent;
+  color: #5d6878;
+  cursor: pointer;
+}
+
+.admin-password-toggle:hover,
+.admin-password-toggle:focus-visible {
+  background: #f2edf4;
+  color: #5b286b;
+}
+
+.admin-password-toggle:focus-visible {
+  outline: 3px solid rgba(107, 47, 123, 0.24);
+  outline-offset: 1px;
+}
+
+.admin-password-toggle svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}

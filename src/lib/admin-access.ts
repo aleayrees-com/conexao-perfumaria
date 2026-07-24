@@ -1,5 +1,7 @@
 export type AdminRole = 'owner' | 'admin' | 'operator';
 
+const MAX_ADMIN_ACCOUNTS = 3;
+
 /**
  * Identifies profiles that may enter the internal operation area.
  *
@@ -16,4 +18,13 @@ export function isAdminProfileActive(isActive: boolean): boolean {
  */
 export function canManageAdminAccounts(role: AdminRole): boolean {
   return role === 'owner';
+}
+
+/**
+ * Keeps the panel restricted to the three people approved for this store.
+ *
+ * @example canCreateAdminAccount(2)
+ */
+export function canCreateAdminAccount(profileCount: number): boolean {
+  return profileCount < MAX_ADMIN_ACCOUNTS;
 }

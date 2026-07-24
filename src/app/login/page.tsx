@@ -1,5 +1,6 @@
 import Image from 'next/image';
 
+import { PasswordField } from '@/components/admin/password-field';
 import { isInitialAdminSetupAvailable } from '@/lib/admin-auth';
 
 import { loginAdminAction, setupInitialAdminAction } from './actions';
@@ -100,28 +101,22 @@ function InitialAdminForm({
         E-mail
         <input autoComplete="email" name="email" required type="email" />
       </label>
-      <label>
-        Nova senha
-        <input
-          autoComplete="new-password"
-          maxLength={15}
-          minLength={8}
-          name="password"
-          required
-          type="password"
-        />
-      </label>
-      <label>
-        Confirmar senha
-        <input
-          autoComplete="new-password"
-          maxLength={15}
-          minLength={8}
-          name="passwordConfirmation"
-          required
-          type="password"
-        />
-      </label>
+      <PasswordField
+        autoComplete="new-password"
+        label="Nova senha"
+        maxLength={15}
+        minLength={8}
+        name="password"
+        required
+      />
+      <PasswordField
+        autoComplete="new-password"
+        label="Confirmar senha"
+        maxLength={15}
+        minLength={8}
+        name="passwordConfirmation"
+        required
+      />
       <label>
         Código de ativação
         <input name="deploymentSecret" required type="password" />
@@ -153,15 +148,12 @@ function AdminLoginForm({
         E-mail
         <input autoComplete="email" name="email" required type="email" />
       </label>
-      <label>
-        Senha
-        <input
-          autoComplete="current-password"
-          name="password"
-          required
-          type="password"
-        />
-      </label>
+      <PasswordField
+        autoComplete="current-password"
+        label="Senha"
+        name="password"
+        required
+      />
       <p className="admin-login-session">
         Este dispositivo será lembrado por 8 dias.
       </p>

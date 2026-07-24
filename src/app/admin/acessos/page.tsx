@@ -1,6 +1,10 @@
 import { redirect } from 'next/navigation';
 
-import { canManageAdminAccounts } from '@/lib/admin-access';
+import {
+  canCreateAdminAccount,
+  canManageAdminAccounts,
+} from '@/lib/admin-access';
+import { PasswordField } from '@/components/admin/password-field';
 import { requireAdmin } from '@/lib/admin-auth';
 import { listAdminProfiles } from '@/lib/admin-data';
 
@@ -21,6 +25,7 @@ export default async function AdminAccessPage() {
   }
 
   const profiles = await listAdminProfiles();
+  const canCreateAccount = canCreateAdminAccount(profiles.length);
 
   return (
     <main className="admin-page admin-access-page">
@@ -65,32 +70,33 @@ export default async function AdminAccessPage() {
               <option value="admin">Administrador</option>
             </select>
           </label>
-          <label>
-            Senha temporária
-            <input
-              maxLength={15}
-              minLength={8}
-              name="password"
-              required
-              type="password"
-            />
-          </label>
-          <label>
-            Confirmar senha
-            <input
-              maxLength={15}
-              minLength={8}
-              name="passwordConfirmation"
-              required
-              type="password"
-            />
-          </label>
+          <PasswordField
+            autoComplete="new-password"
+            label="Senha temporária"
+            maxLength={15}
+            minLength={8}
+            name="password"
+            required
+          />
+          <PasswordField
+            autoComplete="new-password"
+            label="Confirmar senha"
+            maxLength={15}
+            minLength={8}
+            name="passwordConfirmation"
+            required
+          />
           <p className="admin-field-note">
-            De 8 a 15 caracteres, com letras maiúsculas e minúsculas, número e
-            símbolo.
+            {canCreateAccount
+              ? 'De 8 a 15 caracteres, com letras maiúsculas e minúsculas, número e símbolo.'
+              : 'Limite de 3 acessos atingido. Nenhuma quarta conta pode ser criada.'}
           </p>
-          <button className="admin-primary-button" type="submit">
-            Criar acesso
+          <button
+            className="admin-primary-button"
+            disabled={!canCreateAccount}
+            type="submit"
+          >
+            {canCreateAccount ? 'Criar acesso' : 'Limite de acessos atingido'}
           </button>
         </form>
 
