@@ -4,6 +4,7 @@ import {
   canCreateAdminAccount,
   canManageAdminAccounts,
   getAdminAccessErrorMessage,
+  getAdminAccessPasswordError,
   isAdminProfileActive,
 } from './admin-access';
 
@@ -40,5 +41,13 @@ describe('getAdminAccessErrorMessage', () => {
 
   test('ignores unknown access error codes', () => {
     expect(getAdminAccessErrorMessage('unexpected')).toBeNull();
+  });
+});
+
+describe('getAdminAccessPasswordError', () => {
+  test('returns a validation message instead of requiring a page redirect', () => {
+    expect(getAdminAccessPasswordError('Conexao#26', 'Outra#26')).toBe(
+      'A confirmação de senha não confere.',
+    );
   });
 });

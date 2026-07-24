@@ -1,3 +1,5 @@
+import { getAdminPasswordError } from '@/lib/admin-password';
+
 export type AdminRole = 'owner' | 'admin' | 'operator';
 
 const MAX_ADMIN_ACCOUNTS = 3;
@@ -42,4 +44,24 @@ export function getAdminAccessErrorMessage(
   }
 
   return null;
+}
+
+/**
+ * Validates both password fields before an access form leaves the browser.
+ *
+ * @example getAdminAccessPasswordError('Conexao#26', 'Conexao#26')
+ */
+export function getAdminAccessPasswordError(
+  password: string,
+  passwordConfirmation: string,
+): string | null {
+  const passwordError = getAdminPasswordError(password);
+
+  if (passwordError) {
+    return passwordError;
+  }
+
+  return password === passwordConfirmation
+    ? null
+    : 'A confirmação de senha não confere.';
 }

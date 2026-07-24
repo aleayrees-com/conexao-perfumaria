@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactElement } from 'react';
+import { useState, type ChangeEventHandler, type ReactElement } from 'react';
 
 import { getPasswordVisibilityCopy } from '@/lib/password-visibility';
 
@@ -10,7 +10,9 @@ interface PasswordFieldProps {
   readonly maxLength?: number;
   readonly minLength?: number;
   readonly name: string;
+  readonly onChange?: ChangeEventHandler<HTMLInputElement>;
   readonly required?: boolean;
+  readonly value?: string;
 }
 
 function PasswordEyeIcon({
@@ -56,7 +58,9 @@ export function PasswordField({
   maxLength,
   minLength,
   name,
+  onChange,
   required = false,
+  value,
 }: PasswordFieldProps): ReactElement {
   const [isRevealed, setIsRevealed] = useState(false);
   const visibility = getPasswordVisibilityCopy(isRevealed);
@@ -70,8 +74,10 @@ export function PasswordField({
           maxLength={maxLength}
           minLength={minLength}
           name={name}
+          onChange={onChange}
           required={required}
           type={visibility.type}
+          value={value}
         />
         <PasswordVisibilityButton
           isRevealed={isRevealed}

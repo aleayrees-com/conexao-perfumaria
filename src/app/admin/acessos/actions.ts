@@ -2,14 +2,21 @@
 
 import { redirect } from 'next/navigation';
 
-import { canManageAdminAccounts, type AdminRole } from '@/lib/admin-access';
+import {
+  canManageAdminAccounts,
+  getAdminAccessPasswordError,
+  type AdminRole,
+} from '@/lib/admin-access';
 import {
   createAdminAccount,
   requireAdmin,
   setAdminAccountActivity,
 } from '@/lib/admin-auth';
-import { getAdminPasswordError } from '@/lib/admin-password';
 import { createAdminClient, insertAdminAuditLog } from '@/lib/admin-data';
+
+export interface CreateAdminAccountState {
+  readonly error: string | null;
+}
 
 function readAccessField(formData: FormData, key: string): string {
   return String(formData.get(key) ?? '').trim();
@@ -26,26 +33,37 @@ function readAccountRole(value: string): AdminRole {
 }
 
 export async function createAdminAccountAction(
+  _previousState: CreateAdminAccountState,
   formData: FormData,
-): Promise<void> {
+): Promise<CreateAdminAccountState> {
   const actor = await requireAdmin();
   requireAccountOwner(actor.role);
   const password = readAccessField(formData, 'password');
-  const passwordError = getAdminPasswordError(password);
+  const passwordError = getAdminAccessPasswordError(
+    password,
+    readAccessField(formData, 'passwordConfirmation'),
+  );
 
-  if (
-    passwordError ||
-    password !== readAccessField(formData, 'passwordConfirmation')
-  ) {
-    redirect('/admin/acessos?error=password');
+  if (passwordError) {
+    return { error: passwordError };
   }
 
-  const profile = await createAdminAccount({
-    displayName: readAccessField(formData, 'displayName'),
-    email: readAccessField(formData, 'email'),
-    password,
-    role: readAccountRole(readAccessField(formData, 'role')),
-  });
+  let profile;
+
+  try {
+    profile = await createAdminAccount({
+      displayName: readAccessField(formData, 'displayName'),
+      email: readAccessField(formData, 'email'),
+      password,
+      role: readAccountRole(readAccessField(formData, 'role')),
+    });
+  } catch {
+    return {
+      error:
+        'Não foi possível criar este acesso. Confira os dados e use um e-mail ainda não cadastrado.',
+    };
+  }
+
   const client = createAdminClient();
   await insertAdminAuditLog(client, {
     actor,

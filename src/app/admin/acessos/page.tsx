@@ -5,14 +5,11 @@ import {
   canManageAdminAccounts,
   getAdminAccessErrorMessage,
 } from '@/lib/admin-access';
-import { PasswordField } from '@/components/admin/password-field';
 import { requireAdmin } from '@/lib/admin-auth';
 import { listAdminProfiles } from '@/lib/admin-data';
+import { AdminAccessForm } from '@/components/admin/admin-access-form';
 
-import {
-  createAdminAccountAction,
-  updateAdminAccountActivityAction,
-} from './actions';
+import { updateAdminAccountActivityAction } from './actions';
 
 export const metadata = {
   title: 'Acessos | Conexão Admin',
@@ -51,66 +48,10 @@ export default async function AdminAccessPage({
       </header>
 
       <section className="admin-access-layout">
-        <form
-          className="admin-panel admin-access-form"
-          action={createAdminAccountAction}
-        >
-          <div className="admin-panel-header">
-            <div>
-              <p>Novo acesso</p>
-              <h2>Adicionar pessoa</h2>
-            </div>
-          </div>
-          <label>
-            Nome
-            <input
-              autoComplete="name"
-              name="displayName"
-              required
-              type="text"
-            />
-          </label>
-          <label>
-            E-mail
-            <input autoComplete="email" name="email" required type="email" />
-          </label>
-          <label>
-            Tipo de acesso
-            <select defaultValue="operator" name="role">
-              <option value="operator">Operador</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </label>
-          <PasswordField
-            autoComplete="new-password"
-            label="Senha temporária"
-            maxLength={15}
-            minLength={8}
-            name="password"
-            required
-          />
-          <PasswordField
-            autoComplete="new-password"
-            label="Confirmar senha"
-            maxLength={15}
-            minLength={8}
-            name="passwordConfirmation"
-            required
-          />
-          <p className="admin-field-note">
-            {canCreateAccount
-              ? 'De 8 a 15 caracteres, com letras maiúsculas e minúsculas, número e símbolo.'
-              : 'Limite de 3 acessos atingido. Nenhuma quarta conta pode ser criada.'}
-          </p>
-          {error ? <p className="admin-access-error">{error}</p> : null}
-          <button
-            className="admin-primary-button"
-            disabled={!canCreateAccount}
-            type="submit"
-          >
-            {canCreateAccount ? 'Criar acesso' : 'Limite de acessos atingido'}
-          </button>
-        </form>
+        <AdminAccessForm
+          canCreateAccount={canCreateAccount}
+          initialError={error}
+        />
 
         <section
           className="admin-panel admin-access-list"
