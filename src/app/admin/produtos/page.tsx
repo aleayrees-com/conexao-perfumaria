@@ -1,7 +1,12 @@
 import Link from 'next/link';
 
+import { ProductPixPriceField } from '@/components/admin/product-pix-price-field';
 import { listAdminProducts } from '@/lib/admin-data';
-import { summarizeAdminPricing } from '@/lib/admin-pricing';
+import { createAdminProductPage } from '@/lib/admin-product-page';
+import {
+  calculateCardPriceCents,
+  summarizeAdminPricing,
+} from '@/lib/admin-pricing';
 import { formatMoney } from '@/lib/money';
 
 import { updateProductQuickAction } from './actions';
@@ -9,15 +14,9 @@ import { updateProductQuickAction } from './actions';
 interface AdminProductsPageProps {
   readonly searchParams?: Promise<{
     readonly busca?: string;
+    readonly pagina?: string;
     readonly status?: string;
   }>;
-}
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
 }
 
 export default async function AdminProductsPage({
@@ -28,14 +27,16 @@ export default async function AdminProductsPage({
   const searchTerm = resolvedSearchParams?.busca ?? '';
   const statusFilter = resolvedSearchParams?.status ?? '';
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = normalizeText(product.name).includes(
-      normalizeText(searchTerm),
-    );
     const matchesStatus = statusFilter ? product.status === statusFilter : true;
 
-    return matchesSearch && matchesStatus;
+    return matchesStatus;
   });
-  const pricingSummary = summarizeAdminPricing(filteredProducts);
+  const productPage = createAdminProductPage(filteredProducts, {
+    page: Number.parseInt(resolvedSearchParams?.pagina ?? '1', 10),
+    pageSize: 25,
+    searchTerm,
+  });
+  const pricingSummary = summarizeAdminPricing(productPage.items);
 
   return (
     <section className="admin-page">
@@ -45,6 +46,9 @@ export default async function AdminProductsPage({
           <h1>Produtos</h1>
         </div>
         <div className="admin-heading-actions">
+          <Link className="admin-primary-button" href="/admin/produtos/novo">
+            Cadastrar produto
+          </Link>
           <Link
             className="admin-primary-button"
             href="/admin/produtos/edicao-em-massa"
@@ -56,11 +60,11 @@ export default async function AdminProductsPage({
 
       <section className="admin-panel admin-value-toolbar">
         <div>
-          <p>Valores manuais</p>
-          <h2>Edite preço de venda, preço PIX e status sem sair do ADM.</h2>
+          <p>PIX como valor principal</p>
+          <h2>Informe o PIX; o valor do cartão é calculado automaticamente.</h2>
         </div>
         <div className="admin-value-toolbar-metrics">
-          <span>{filteredProducts.length} produtos filtrados</span>
+          <span>{productPage.totalItems} produtos filtrados</span>
           <span>
             Média ativa: {formatMoney(pricingSummary.averageActivePriceCents)}
           </span>
@@ -93,78 +97,92 @@ export default async function AdminProductsPage({
               <th>Produto</th>
               <th>Categoria</th>
               <th>Status</th>
-              <th>Preço</th>
-              <th>PIX</th>
+              <th>Cartão</th>
+              <th>PIX (principal)</th>
               <th>Estoque</th>
               <th>Edição rápida</th>
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.id}>
-                <td>
-                  <Link href={`/admin/produtos/${product.id}`}>
-                    {product.name}
-                  </Link>
-                  <small>{product.slug}</small>
-                </td>
-                <td>{product.categoryName}</td>
-                <td>
-                  <span
-                    className={`admin-status admin-status-${product.status}`}
-                  >
-                    {product.status}
-                  </span>
-                </td>
-                <td>{formatMoney(product.priceCents)}</td>
-                <td>
-                  {product.pixPriceCents
-                    ? formatMoney(product.pixPriceCents)
-                    : '-'}
-                </td>
-                <td>{product.totalStock}</td>
-                <td>
-                  <form
-                    className="admin-inline-form"
-                    action={updateProductQuickAction}
-                  >
-                    <span className="admin-inline-form-title">Valores</span>
-                    <input name="productId" type="hidden" value={product.id} />
-                    <label>
-                      Preço
+            {productPage.items.map((product) => {
+              const pixPriceCents = product.pixPriceCents ?? product.priceCents;
+              const cardPriceCents = calculateCardPriceCents(pixPriceCents);
+
+              return (
+                <tr key={product.id}>
+                  <td>
+                    <Link href={`/admin/produtos/${product.id}`}>
+                      {product.name}
+                    </Link>
+                    <small>{product.slug}</small>
+                  </td>
+                  <td>{product.categoryName}</td>
+                  <td>
+                    <span
+                      className={`admin-status admin-status-${product.status}`}
+                    >
+                      {product.status}
+                    </span>
+                  </td>
+                  <td>{formatMoney(cardPriceCents)}</td>
+                  <td>{formatMoney(pixPriceCents)}</td>
+                  <td>{product.totalStock}</td>
+                  <td>
+                    <form
+                      className="admin-inline-form"
+                      action={updateProductQuickAction}
+                    >
+                      <span className="admin-inline-form-title">Valores</span>
                       <input
-                        aria-label={`Preço de ${product.name}`}
-                        defaultValue={(product.priceCents / 100).toFixed(2)}
-                        name="price"
+                        name="productId"
+                        type="hidden"
+                        value={product.id}
                       />
-                    </label>
-                    <label>
-                      PIX
-                      <input
-                        aria-label={`Preço PIX de ${product.name}`}
-                        defaultValue={
-                          product.pixPriceCents
-                            ? (product.pixPriceCents / 100).toFixed(2)
-                            : ''
-                        }
-                        name="pixPrice"
+                      <ProductPixPriceField
+                        defaultPixPriceCents={pixPriceCents}
+                        inputName="pixPrice"
+                        label="PIX"
                       />
-                    </label>
-                    <select defaultValue={product.status} name="status">
-                      <option value="active">Ativo</option>
-                      <option value="draft">Rascunho</option>
-                      <option value="archived">Arquivado</option>
-                    </select>
-                    <button className="admin-ghost-button" type="submit">
-                      Salvar
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))}
+                      <select defaultValue={product.status} name="status">
+                        <option value="active">Ativo</option>
+                        <option value="draft">Rascunho</option>
+                        <option value="archived">Arquivado</option>
+                      </select>
+                      <button className="admin-ghost-button" type="submit">
+                        Salvar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {productPage.totalPages > 1 ? (
+        <nav aria-label="Paginação de produtos" className="admin-pagination">
+          {productPage.page > 1 ? (
+            <Link
+              className="admin-ghost-button"
+              href={`/admin/produtos?busca=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}&pagina=${productPage.page - 1}`}
+            >
+              Anterior
+            </Link>
+          ) : null}
+          <span>
+            Página {productPage.page} de {productPage.totalPages}
+          </span>
+          {productPage.page < productPage.totalPages ? (
+            <Link
+              className="admin-ghost-button"
+              href={`/admin/produtos?busca=${encodeURIComponent(searchTerm)}&status=${encodeURIComponent(statusFilter)}&pagina=${productPage.page + 1}`}
+            >
+              Próxima
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
     </section>
   );
 }

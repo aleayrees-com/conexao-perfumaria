@@ -14,11 +14,14 @@ import {
   insertAdminAuditLog,
   revalidateStorefrontCatalog,
 } from '@/lib/admin-data';
+import { calculateCardPriceCents } from '@/lib/admin-pricing';
 
-type ProductMoneyField =
-  | 'price_cents'
-  | 'pix_price_cents'
-  | 'compare_at_price_cents';
+type ProductMoneyField = 'pix_price_cents' | 'compare_at_price_cents';
+type MoneyValueSource = {
+  readonly compare_at_price_cents: number | string | null;
+  readonly pix_price_cents: number | string | null;
+  readonly price_cents: number | string;
+};
 
 const MAX_BULK_PRODUCTS = 750;
 
@@ -88,15 +91,48 @@ function readMoneyOperation(formData: FormData): {
 }
 
 function readMoneyField(value: string): ProductMoneyField {
-  if (value === 'pix') {
-    return 'pix_price_cents';
-  }
-
   if (value === 'compare') {
     return 'compare_at_price_cents';
   }
 
-  return 'price_cents';
+  return 'pix_price_cents';
+}
+
+function toMoneyCents(value: number | string | null): number | null {
+  if (value === null) {
+    return null;
+  }
+
+  return typeof value === 'number' ? value : Number.parseInt(value, 10);
+}
+
+function readCurrentMoneyValue(
+  source: MoneyValueSource,
+  field: ProductMoneyField,
+): number | null {
+  if (field === 'pix_price_cents') {
+    return (
+      toMoneyCents(source.pix_price_cents) ?? toMoneyCents(source.price_cents)
+    );
+  }
+
+  return toMoneyCents(source.compare_at_price_cents);
+}
+
+function createMoneyUpdate(
+  field: ProductMoneyField,
+  value: number | null,
+): Record<string, number | null> {
+  if (field === 'pix_price_cents') {
+    const pixPriceCents = value ?? 0;
+
+    return {
+      pix_price_cents: pixPriceCents,
+      price_cents: calculateCardPriceCents(pixPriceCents),
+    };
+  }
+
+  return { compare_at_price_cents: value };
 }
 
 function readStockMode(value: string): 'set' | 'increase' | 'decrease' {
@@ -213,6 +249,13 @@ export async function applyBulkProductAction(
   if (operation === 'adjust_price') {
     const field = readMoneyField(readString(formData, 'moneyField'));
     const moneyOperation = readMoneyOperation(formData);
+
+    if (field === 'pix_price_cents' && moneyOperation.mode === 'clear') {
+      throw new Error(
+        'O preço PIX é obrigatório; escolha um valor igual ou maior que zero.',
+      );
+    }
+
     const [productsResponse, variantsResponse] = await Promise.all([
       client
         .from('products')
@@ -234,14 +277,12 @@ export async function applyBulkProductAction(
 
     for (const product of productsResponse.data ?? []) {
       const value = applyMoneyOperation(
-        typeof product[field] === 'number'
-          ? product[field]
-          : Number.parseInt(String(product[field] ?? '0'), 10),
+        readCurrentMoneyValue(product, field),
         moneyOperation,
       );
       const response = await client
         .from('products')
-        .update({ [field]: value })
+        .update(createMoneyUpdate(field, value))
         .eq('id', product.id);
 
       if (response.error) {
@@ -251,14 +292,12 @@ export async function applyBulkProductAction(
 
     for (const variant of variantsResponse.data ?? []) {
       const value = applyMoneyOperation(
-        typeof variant[field] === 'number'
-          ? variant[field]
-          : Number.parseInt(String(variant[field] ?? '0'), 10),
+        readCurrentMoneyValue(variant, field),
         moneyOperation,
       );
       const response = await client
         .from('product_variants')
-        .update({ [field]: value })
+        .update(createMoneyUpdate(field, value))
         .eq('id', variant.id);
 
       if (response.error) {
@@ -376,15 +415,15 @@ export async function importProductCsvAction(
         row.status === 'active' ? new Date().toISOString() : null;
     }
 
-    const productPrice = parseMoneyCents(row.price);
     const productPixPrice = parseMoneyCents(row.pixPrice);
     const productCompareAtPrice = parseMoneyCents(row.compareAtPrice);
+    const productPixPriceCents = productPixPrice ?? parseMoneyCents(row.price);
 
-    if (productPrice !== null) {
-      productUpdate.price_cents = productPrice;
+    if (productPixPriceCents !== null) {
+      productUpdate.pix_price_cents = productPixPriceCents;
+      productUpdate.price_cents = calculateCardPriceCents(productPixPriceCents);
     }
 
-    productUpdate.pix_price_cents = productPixPrice;
     productUpdate.compare_at_price_cents = productCompareAtPrice;
 
     const productResponse = await client
@@ -410,17 +449,18 @@ export async function importProductCsvAction(
 
     variantUpdate.sku = row.variantSku || null;
 
-    const variantPrice = parseMoneyCents(row.variantPrice);
     const variantPixPrice = parseMoneyCents(row.variantPixPrice);
     const variantCompareAtPrice = parseMoneyCents(row.variantCompareAtPrice);
+    const variantPixPriceCents =
+      variantPixPrice ?? parseMoneyCents(row.variantPrice);
     const variantStock = parseInteger(row.variantStock);
     const variantAvailable = parseBooleanValue(row.variantAvailable);
 
-    if (variantPrice !== null) {
-      variantUpdate.price_cents = variantPrice;
+    if (variantPixPriceCents !== null) {
+      variantUpdate.pix_price_cents = variantPixPriceCents;
+      variantUpdate.price_cents = calculateCardPriceCents(variantPixPriceCents);
     }
 
-    variantUpdate.pix_price_cents = variantPixPrice;
     variantUpdate.compare_at_price_cents = variantCompareAtPrice;
 
     if (variantStock !== null) {

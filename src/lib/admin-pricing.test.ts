@@ -1,6 +1,30 @@
 import { describe, expect, test } from 'vitest';
 
-import { summarizeAdminPricing } from './admin-pricing';
+import {
+  calculateCardPriceCents,
+  summarizeAdminPricing,
+} from './admin-pricing';
+
+describe('calculateCardPriceCents', () => {
+  test('applies the fixed 7.54% card markup to the PIX price', () => {
+    expect(calculateCardPriceCents(30000)).toBe(32262);
+    expect(calculateCardPriceCents(10000)).toBe(10754);
+  });
+
+  test('rounds to the nearest cent', () => {
+    expect(calculateCardPriceCents(1)).toBe(1);
+    expect(calculateCardPriceCents(101)).toBe(109);
+  });
+
+  test('rejects invalid cent values', () => {
+    expect(() => calculateCardPriceCents(-1)).toThrow(
+      'PIX price cents "-1" must be a non-negative integer.',
+    );
+    expect(() => calculateCardPriceCents(1.5)).toThrow(
+      'PIX price cents "1.5" must be a non-negative integer.',
+    );
+  });
+});
 
 describe('summarizeAdminPricing', () => {
   test('summarizes active prices, PIX gaps, comparison gaps and inventory value', () => {

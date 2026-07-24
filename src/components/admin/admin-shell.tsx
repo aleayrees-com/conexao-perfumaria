@@ -5,9 +5,11 @@ import { logoutAdminAction } from '@/app/login/actions';
 const navItems = [
   { href: '/admin', label: 'Painel' },
   { href: '/admin/produtos', label: 'Produtos' },
-  { href: '/admin/produtos/edicao-em-massa', label: 'Valores e estoque' },
+  { href: '/admin/produtos/edicao-em-massa', label: 'Inventário' },
   { href: '/admin/categorias', label: 'Categorias' },
-  { href: '/admin/pedidos', label: 'Pedidos' },
+  { href: '/admin/pedidos', label: 'Vendas' },
+  { href: '/admin/clientes', label: 'Clientes' },
+  { href: '/admin/estatisticas', label: 'Estatísticas' },
 ] as const;
 
 export function AdminShell({

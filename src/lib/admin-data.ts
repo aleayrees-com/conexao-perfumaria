@@ -315,6 +315,15 @@ export interface AdminOrderDetail extends AdminOrderSummary {
   readonly items: readonly AdminOrderItem[];
 }
 
+export interface AdminCustomerSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly email: string | null;
+  readonly phone: string | null;
+  readonly marketingOptIn: boolean;
+  readonly createdAt: string;
+}
+
 export interface AdminOrderShippingAddress {
   readonly cep: string | null;
   readonly street: string | null;
@@ -863,6 +872,26 @@ export async function listAdminOrders(): Promise<readonly AdminOrderSummary[]> {
     adminNotes: typeof order.admin_notes === 'string' ? order.admin_notes : '',
     source: order.source,
     createdAt: order.placed_at ?? order.created_at,
+  }));
+}
+
+export async function listAdminCustomers(): Promise<
+  readonly AdminCustomerSummary[]
+> {
+  const response = await createAdminClient()
+    .from('customers')
+    .select('id,name,email,phone,marketing_opt_in,created_at')
+    .order('name', { ascending: true });
+  const customers =
+    assertSupabaseSuccess(response, 'Falha ao listar clientes') ?? [];
+
+  return customers.map((customer) => ({
+    id: customer.id,
+    name: customer.name,
+    email: customer.email,
+    phone: customer.phone,
+    marketingOptIn: customer.marketing_opt_in,
+    createdAt: customer.created_at,
   }));
 }
 

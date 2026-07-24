@@ -24,7 +24,7 @@ export default async function BulkProductPage({
       <div className="admin-heading">
         <div>
           <p>Catálogo</p>
-          <h1>Valores e estoque em escala</h1>
+          <h1>Inventário e valores em escala</h1>
           <p>
             Selecione produtos, escolha o tipo de ajuste e revise a prévia antes
             de aplicar.
