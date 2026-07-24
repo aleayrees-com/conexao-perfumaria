@@ -28,3 +28,18 @@ export function canManageAdminAccounts(role: AdminRole): boolean {
 export function canCreateAdminAccount(profileCount: number): boolean {
   return profileCount < MAX_ADMIN_ACCOUNTS;
 }
+
+/**
+ * Translates known account-form failures into a clear message for the team.
+ *
+ * @example getAdminAccessErrorMessage('password')
+ */
+export function getAdminAccessErrorMessage(
+  error: string | undefined,
+): string | null {
+  if (error === 'password') {
+    return 'Revise a senha: use 8 a 15 caracteres, letras maiúsculas e minúsculas, número e símbolo.';
+  }
+
+  return null;
+}

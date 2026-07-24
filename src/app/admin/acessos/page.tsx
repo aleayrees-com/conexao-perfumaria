@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import {
   canCreateAdminAccount,
   canManageAdminAccounts,
+  getAdminAccessErrorMessage,
 } from '@/lib/admin-access';
 import { PasswordField } from '@/components/admin/password-field';
 import { requireAdmin } from '@/lib/admin-auth';
@@ -17,7 +18,15 @@ export const metadata = {
   title: 'Acessos | Conexão Admin',
 };
 
-export default async function AdminAccessPage() {
+interface AdminAccessPageProps {
+  readonly searchParams?: Promise<{
+    readonly error?: string;
+  }>;
+}
+
+export default async function AdminAccessPage({
+  searchParams,
+}: AdminAccessPageProps) {
   const actor = await requireAdmin();
 
   if (!canManageAdminAccounts(actor.role)) {
@@ -26,6 +35,8 @@ export default async function AdminAccessPage() {
 
   const profiles = await listAdminProfiles();
   const canCreateAccount = canCreateAdminAccount(profiles.length);
+  const resolvedSearchParams = await searchParams;
+  const error = getAdminAccessErrorMessage(resolvedSearchParams?.error);
 
   return (
     <main className="admin-page admin-access-page">
@@ -91,6 +102,7 @@ export default async function AdminAccessPage() {
               ? 'De 8 a 15 caracteres, com letras maiúsculas e minúsculas, número e símbolo.'
               : 'Limite de 3 acessos atingido. Nenhuma quarta conta pode ser criada.'}
           </p>
+          {error ? <p className="admin-access-error">{error}</p> : null}
           <button
             className="admin-primary-button"
             disabled={!canCreateAccount}

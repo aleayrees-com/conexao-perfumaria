@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   canCreateAdminAccount,
   canManageAdminAccounts,
+  getAdminAccessErrorMessage,
   isAdminProfileActive,
 } from './admin-access';
 
@@ -27,5 +28,17 @@ describe('canCreateAdminAccount', () => {
   test('limits the store to the three agreed people', () => {
     expect(canCreateAdminAccount(2)).toBe(true);
     expect(canCreateAdminAccount(3)).toBe(false);
+  });
+});
+
+describe('getAdminAccessErrorMessage', () => {
+  test('explains the temporary password policy without failing the page', () => {
+    expect(getAdminAccessErrorMessage('password')).toBe(
+      'Revise a senha: use 8 a 15 caracteres, letras maiúsculas e minúsculas, número e símbolo.',
+    );
+  });
+
+  test('ignores unknown access error codes', () => {
+    expect(getAdminAccessErrorMessage('unexpected')).toBeNull();
   });
 });

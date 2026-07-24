@@ -3139,40 +3139,27 @@ body::before {
 
 .about-store {
   display: grid;
-  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1fr);
-  gap: clamp(24px, 5vw, 64px);
+  grid-template-columns: minmax(0, 860px);
+  justify-content: center;
   align-items: center;
 }
 
-.about-store-photo {
-  display: grid;
-  min-height: 0;
-  aspect-ratio: 2 / 1;
-  place-items: stretch;
-  overflow: hidden;
-  border: 1px solid rgba(216, 168, 77, 0.24);
-  border-radius: 30px;
-  background: #fffdf9;
-  box-shadow: 0 28px 70px rgba(54, 15, 74, 0.14);
-}
-
-.about-store-image {
-  display: block;
+.about-store-content {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .about-store h2 {
-  max-width: 16ch;
+  max-width: 18ch;
+  margin-inline: auto;
   font-size: clamp(2.15rem, 4.4vw, 4.4rem);
 }
 
 .about-store ul {
+  width: min(100%, 760px);
   display: grid;
   gap: 12px;
   padding: 0;
-  margin: 24px 0 0;
+  margin: 28px auto 0;
   list-style: none;
 }
 
@@ -3408,13 +3395,8 @@ body::before {
   .home-category-grid,
   .scent-profile-grid,
   .review-grid,
-  .gift-guide-grid,
-  .about-store {
+  .gift-guide-grid {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .about-store {
-    align-items: stretch;
   }
 
   .review-grid {
@@ -3592,8 +3574,7 @@ body::before {
   .home-category-grid,
   .scent-profile-grid,
   .review-grid,
-  .gift-guide-grid,
-  .about-store {
+  .gift-guide-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3791,11 +3772,6 @@ body::before {
 
   .purchase-panel p {
     display: none;
-  }
-
-  .about-store-photo {
-    min-height: 0;
-    border-radius: 24px;
   }
 
   .catalog-toolbar {
@@ -7334,6 +7310,14 @@ body::before {
   color: #667085;
   font-size: 0.79rem;
   line-height: 1.5;
+}
+
+.admin-access-error {
+  margin: 0;
+  color: #a12b2b;
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.45;
 }
 
 .admin-access-list {

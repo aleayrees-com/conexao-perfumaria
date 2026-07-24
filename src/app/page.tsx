@@ -339,16 +339,7 @@ export default async function HomePage() {
 
       <StoreSection muted>
         <div className="about-store">
-          <div className="about-store-photo" aria-hidden="true">
-            <Image
-              alt=""
-              className="about-store-image"
-              height={800}
-              src="/brand/conexao-history-story-banner.png"
-              width={1600}
-            />
-          </div>
-          <div>
+          <div className="about-store-content">
             <p className="eyebrow">Conheça a Conexão</p>
             <h2>11 anos de história conectando pessoas pelas fragrâncias</h2>
             <ul>

@@ -37,7 +37,7 @@ export async function createAdminAccountAction(
     passwordError ||
     password !== readAccessField(formData, 'passwordConfirmation')
   ) {
-    throw new Error(passwordError ?? 'A confirmação de senha não confere.');
+    redirect('/admin/acessos?error=password');
   }
 
   const profile = await createAdminAccount({
