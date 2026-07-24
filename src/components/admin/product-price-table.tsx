@@ -1,17 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { updateProductPricesAction } from '@/app/admin/produtos/actions';
 import type { AdminProductSummary } from '@/lib/admin-data';
 import { updateAdminPriceChanges } from '@/lib/admin-quick-prices';
+import type {
+  AdminProductSortDirection,
+  AdminProductSortField,
+} from '@/lib/admin-product-page';
+import {
+  adminProductSortStorageKey,
+  createAdminProductSortHref,
+  parseAdminProductSortPreference,
+  type AdminProductSortPreference,
+} from '@/lib/admin-product-sort-preferences';
 
 import { ProductPixPriceField } from './product-pix-price-field';
 
 interface ProductPriceTableProps {
   readonly products: readonly AdminProductSummary[];
   readonly returnTo: string;
+  readonly sortDirection: AdminProductSortDirection;
+  readonly sortField: AdminProductSortField;
 }
 
 function getProductPixPriceCents(product: AdminProductSummary): number {
@@ -113,6 +126,43 @@ function ProductPriceSaveFloat({ count }: { readonly count: number }) {
   );
 }
 
+function ProductSortHeader({
+  currentField,
+  direction,
+  field,
+  label,
+  onSort,
+}: {
+  readonly currentField: AdminProductSortField;
+  readonly direction: AdminProductSortDirection;
+  readonly field: AdminProductSortField;
+  readonly label: string;
+  readonly onSort: (field: AdminProductSortField) => void;
+}) {
+  const isActive = field === currentField;
+  const ariaSort = isActive
+    ? direction === 'asc'
+      ? 'ascending'
+      : 'descending'
+    : 'none';
+  const indicator = isActive ? (direction === 'asc' ? '↑' : '↓') : '↕';
+
+  return (
+    <th aria-sort={ariaSort} className="admin-sortable-header">
+      <button
+        className={`admin-sort-button${isActive ? ' is-active' : ''}`}
+        onClick={() => onSort(field)}
+        type="button"
+      >
+        <span>{label}</span>
+        <span aria-hidden="true" className="admin-sort-indicator">
+          {indicator}
+        </span>
+      </button>
+    </th>
+  );
+}
+
 /**
  * Allows price changes across the current catalog page in one save action.
  *
@@ -121,11 +171,29 @@ function ProductPriceSaveFloat({ count }: { readonly count: number }) {
 export function ProductPriceTable({
   products,
   returnTo,
+  sortDirection,
+  sortField,
 }: ProductPriceTableProps) {
+  const router = useRouter();
   const [changedPriceCents, setChangedPriceCents] = useState<
     Record<string, number>
   >({});
   const changedProductIds = Object.keys(changedPriceCents);
+
+  useEffect(() => {
+    const storedValue = window.localStorage.getItem(adminProductSortStorageKey);
+    const preference = storedValue
+      ? parseAdminProductSortPreference(storedValue)
+      : null;
+
+    if (
+      !preference ||
+      (preference.field === sortField && preference.direction === sortDirection)
+    )
+      return;
+
+    router.replace(createAdminProductSortHref(returnTo, preference));
+  }, [returnTo, router, sortDirection, sortField]);
 
   function handlePriceChange(
     product: AdminProductSummary,
@@ -139,6 +207,27 @@ export function ProductPriceTable({
         nextPriceCents,
       ),
     );
+  }
+
+  function handleSort(field: AdminProductSortField) {
+    if (
+      changedProductIds.length > 0 &&
+      !window.confirm(
+        'Salve as alterações de preço antes de mudar a ordenação.',
+      )
+    ) {
+      return;
+    }
+
+    const direction =
+      field === sortField && sortDirection === 'asc' ? 'desc' : 'asc';
+    const preference: AdminProductSortPreference = { direction, field };
+
+    window.localStorage.setItem(
+      adminProductSortStorageKey,
+      JSON.stringify(preference),
+    );
+    router.replace(createAdminProductSortHref(returnTo, preference));
   }
 
   return (
@@ -159,11 +248,41 @@ export function ProductPriceTable({
         <table className="admin-catalog-table">
           <thead>
             <tr>
-              <th>Produto</th>
-              <th>Categoria</th>
-              <th>Preço PIX</th>
-              <th>Estoque</th>
-              <th>Status</th>
+              <ProductSortHeader
+                currentField={sortField}
+                direction={sortDirection}
+                field="name"
+                label="Produto"
+                onSort={handleSort}
+              />
+              <ProductSortHeader
+                currentField={sortField}
+                direction={sortDirection}
+                field="category"
+                label="Categoria"
+                onSort={handleSort}
+              />
+              <ProductSortHeader
+                currentField={sortField}
+                direction={sortDirection}
+                field="price"
+                label="Preço PIX"
+                onSort={handleSort}
+              />
+              <ProductSortHeader
+                currentField={sortField}
+                direction={sortDirection}
+                field="stock"
+                label="Estoque"
+                onSort={handleSort}
+              />
+              <ProductSortHeader
+                currentField={sortField}
+                direction={sortDirection}
+                field="status"
+                label="Status"
+                onSort={handleSort}
+              />
               <th aria-label="Ações" />
             </tr>
           </thead>

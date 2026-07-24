@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
-import { createAdminProductPage } from './admin-product-page';
+import {
+  createAdminProductPage,
+  resolveAdminProductSortField,
+} from './admin-product-page';
 
 const products = [
   { id: '1', name: 'Zafir', categoryName: 'Perfumes' },
@@ -43,5 +46,41 @@ describe('createAdminProductPage', () => {
 
     expect(page.page).toBe(1);
     expect(page.items).toHaveLength(4);
+  });
+
+  test('sorts PIX prices from highest to lowest before paginating', () => {
+    const page = createAdminProductPage(
+      [
+        { id: '1', name: 'Âmbar', categoryName: 'Árabes', pixPriceCents: 8500 },
+        {
+          id: '2',
+          name: 'Zafir',
+          categoryName: 'Perfumes',
+          pixPriceCents: 14500,
+        },
+        {
+          id: '3',
+          name: 'Ameer',
+          categoryName: 'Árabes',
+          pixPriceCents: 12000,
+        },
+      ],
+      {
+        page: 1,
+        pageSize: 2,
+        searchTerm: '',
+        sortDirection: 'desc',
+        sortField: 'price',
+      },
+    );
+
+    expect(page.items.map((product) => product.id)).toEqual(['2', '3']);
+  });
+});
+
+describe('resolveAdminProductSortField', () => {
+  test('uses the catalog default when a query value is unsupported', () => {
+    expect(resolveAdminProductSortField('stock')).toBe('stock');
+    expect(resolveAdminProductSortField('cliente')).toBe('category');
   });
 });

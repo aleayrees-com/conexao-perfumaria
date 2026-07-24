@@ -1,5 +1,7 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
+
 import { redirect } from 'next/navigation';
 
 import {
@@ -12,6 +14,7 @@ import { resolveAdminProductReturnPath } from '@/lib/admin-pagination';
 import { calculateCardPriceCents } from '@/lib/admin-pricing';
 import { createAdminPriceUpdateIds } from '@/lib/admin-quick-prices';
 import { createCatalogSlug } from '@/lib/catalog-slug';
+import { createCatalogSku } from '@/lib/catalog-sku';
 
 function readString(formData: FormData, key: string): string {
   return String(formData.get(key) ?? '').trim();
@@ -285,7 +288,9 @@ export async function createProductAction(formData: FormData): Promise<void> {
   const variantResponse = await client.from('product_variants').insert({
     product_id: productResponse.data.id,
     label: readString(formData, 'variantLabel') || 'Padrão',
-    sku: readNullableString(formData, 'sku'),
+    sku:
+      readNullableString(formData, 'sku') ??
+      createCatalogSku(name, randomUUID()),
     price_cents: calculateCardPriceCents(pixPriceCents),
     pix_price_cents: pixPriceCents,
     compare_at_price_cents: readOptionalMoneyCents(formData, 'compareAtPrice'),

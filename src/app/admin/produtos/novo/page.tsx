@@ -93,10 +93,10 @@ export default async function NewAdminProductPage() {
               Estoque inicial
               <input defaultValue={0} min={0} name="stock" type="number" />
             </label>
-            <label>
-              SKU (opcional)
-              <input name="sku" />
-            </label>
+            <div className="admin-form-auto-note">
+              <strong>SKU automático</strong>
+              <span>Será criado ao cadastrar o produto.</span>
+            </div>
             <label>
               Nome da variação
               <input defaultValue="Padrão" name="variantLabel" />
