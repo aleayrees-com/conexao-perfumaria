@@ -6,6 +6,7 @@
   --amber: #d8a84d;
   --amber-dark: #9a671c;
   --wine: #6b2386;
+  --pix-green: #237a3f;
   --moss: #426050;
   --violet-bright: #9b45bd;
   --violet-deep: #4a1263;
@@ -1248,7 +1249,7 @@ h2 {
 }
 
 .featured-section .product-card.editorial .price-stack strong {
-  color: var(--ink);
+  color: var(--wine);
   font-size: 1.85rem;
 }
 
@@ -1411,6 +1412,17 @@ h2 {
 .detail-price small {
   color: var(--ink-soft);
   font-size: 0.85rem;
+}
+
+.payment-card-price {
+  color: var(--wine);
+}
+
+.price-stack .payment-pix-price,
+.detail-price .payment-pix-price {
+  color: var(--pix-green);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .purchase-panel {
@@ -3900,6 +3912,10 @@ body::before {
   .price-stack small {
     font-size: 0.7rem;
     line-height: 1.25;
+  }
+
+  .price-stack .payment-pix-price {
+    font-size: 0.78rem;
   }
 
   .product-card-link {

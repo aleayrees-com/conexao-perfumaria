@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { ProductGallery } from '@/components/product-gallery';
+import { ProductPaymentPrice } from '@/components/product-payment-price';
 import { ProductPurchasePanel } from '@/components/product-purchase-panel';
 import { getProductBySlug, getProducts } from '@/lib/catalog';
-import { formatMoney, getInstallmentText } from '@/lib/money';
 import { formatPortugueseDisplayText } from '@/lib/strings';
 
 interface ProductPageProps {
@@ -67,13 +67,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
         </p>
         <h1>{product.name}</h1>
-        <div className="detail-price">
-          <strong>{formatMoney(product.priceCents)}</strong>
-          <span>{getInstallmentText(product.priceCents)}</span>
-          {product.pixPriceCents ? (
-            <small>{formatMoney(product.pixPriceCents)} no PIX</small>
-          ) : null}
-        </div>
+        <ProductPaymentPrice
+          className="detail-price"
+          pixPriceCents={product.pixPriceCents}
+          priceCents={product.priceCents}
+        />
         <p>{formatPortugueseDisplayText(product.description)}</p>
         <div className="stock-note">
           <span>
