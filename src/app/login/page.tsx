@@ -1,5 +1,3 @@
-import { PageHeading, PageShell } from '@/components/store-layout';
-
 import { loginAdminAction } from './actions';
 
 export const metadata = {
@@ -16,45 +14,72 @@ interface LoginPageProps {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const resolvedSearchParams = await searchParams;
+  const errorMessage =
+    resolvedSearchParams?.error === 'rate'
+      ? 'Muitas tentativas. Aguarde alguns minutos e tente novamente.'
+      : resolvedSearchParams?.error === '1'
+        ? 'Senha inválida. Confira o acesso administrativo.'
+        : null;
 
   return (
-    <PageShell>
-      <PageHeading
-        eyebrow="Area administrativa"
-        title="Entrar no painel da Conexão"
-      >
-        <p>
-          Acesso protegido para cuidar de produtos, estoque, pedidos e
-          conversoes.
-        </p>
-      </PageHeading>
-      <form className="login-card" action={loginAdminAction}>
-        <input
-          name="next"
-          type="hidden"
-          value={resolvedSearchParams?.next ?? '/admin'}
-        />
-        <label>
-          Senha administrativa
+    <main className="admin-login-screen">
+      <section className="admin-login-panel" aria-label="Login administrativo">
+        <form className="login-card" action={loginAdminAction}>
           <input
-            autoComplete="current-password"
-            name="password"
-            required
-            type="password"
+            name="next"
+            type="hidden"
+            value={resolvedSearchParams?.next ?? '/admin'}
           />
-        </label>
-        {resolvedSearchParams?.error === 'rate' ? (
-          <p className="checkout-error">
-            Muitas tentativas. Aguarde alguns minutos e tente novamente.
-          </p>
-        ) : null}
-        {resolvedSearchParams?.error === '1' ? (
-          <p className="checkout-error">Senha invalida.</p>
-        ) : null}
-        <button className="button" type="submit">
-          Entrar
-        </button>
-      </form>
-    </PageShell>
+          <div>
+            <p>Acesso seguro</p>
+            <h2>Bem-vindo de volta</h2>
+            <span>Use a senha administrativa para continuar.</span>
+          </div>
+          <label>
+            Senha administrativa
+            <input
+              autoComplete="current-password"
+              name="password"
+              required
+              type="password"
+            />
+          </label>
+          {errorMessage ? (
+            <p className="checkout-error admin-login-error" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+          <button className="button" type="submit">
+            Entrar no painel
+          </button>
+        </form>
+      </section>
+
+      <section className="admin-login-hero" aria-labelledby="admin-login-title">
+        <div className="admin-login-brand">
+          <span>CP</span>
+          <div>
+            <strong>Conexão Admin</strong>
+            <small>Operação da loja</small>
+          </div>
+        </div>
+
+        <div className="admin-login-copy">
+          <p>Área administrativa</p>
+          <h1 id="admin-login-title">Entrar no painel da Conexão</h1>
+          <span>
+            Controle produtos, valores, estoque, pedidos e conversões em um
+            ambiente protegido.
+          </span>
+        </div>
+
+        <div className="admin-login-highlights" aria-label="Áreas do painel">
+          <span>Produtos</span>
+          <span>Valores</span>
+          <span>Estoque</span>
+          <span>Pedidos</span>
+        </div>
+      </section>
+    </main>
   );
 }

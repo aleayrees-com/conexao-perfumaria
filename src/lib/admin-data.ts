@@ -3,8 +3,14 @@ import 'server-only';
 import { revalidatePath } from 'next/cache';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import pg from 'pg';
 
 import type { BulkProductCsvExportRow } from '@/lib/admin-product-bulk';
+import {
+  isSupabaseAdminEnvConfigured,
+  isSupabaseDbUrlConfigured,
+  readOptionalEnv,
+} from '@/lib/admin-env';
 
 type DbInteger = number | string;
 
@@ -347,14 +353,31 @@ function readSupabaseAdminEnv(): {
   readonly url: string;
   readonly key: string;
 } {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = readOptionalEnv(process.env, 'SUPABASE_URL');
+  const key = readOptionalEnv(process.env, 'SUPABASE_SERVICE_ROLE_KEY');
 
   if (!url || !key) {
     throw new Error('Supabase admin env nao configurado.');
   }
 
   return { url, key };
+}
+
+function readSupabaseDbUrl(): string {
+  const dbUrl = readOptionalEnv(process.env, 'SUPABASE_DB_URL');
+
+  if (!dbUrl) {
+    throw new Error('Supabase DB env nao configurado.');
+  }
+
+  return dbUrl;
+}
+
+function shouldUseAdminPgClient(): boolean {
+  return (
+    !isSupabaseAdminEnvConfigured(process.env) &&
+    isSupabaseDbUrlConfigured(process.env)
+  );
 }
 
 export function createAdminClient(): AdminClient {
@@ -366,6 +389,35 @@ export function createAdminClient(): AdminClient {
       autoRefreshToken: false,
     },
   });
+}
+
+function createAdminPgClient(): pg.Client {
+  const url = new URL(readSupabaseDbUrl());
+
+  return new pg.Client({
+    host: url.hostname,
+    port: Number(url.port || '5432'),
+    database: decodeURIComponent(url.pathname.replace(/^\//, '') || 'postgres'),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
+}
+
+async function withAdminPgClient<T>(
+  callback: (client: pg.Client) => Promise<T>,
+): Promise<T> {
+  const client = createAdminPgClient();
+
+  await client.connect();
+
+  try {
+    return await callback(client);
+  } finally {
+    await client.end();
+  }
 }
 
 function toInteger(value: DbInteger, field: string): number {
@@ -394,6 +446,18 @@ function optionalInteger(
   return value === null || value === undefined
     ? fallback
     : toInteger(value, field);
+}
+
+function toDateText(value: Date | string | null | undefined): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    return value;
+  }
+
+  return new Date().toISOString();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -510,6 +574,465 @@ async function readCategoryNameMap(
   return new Map(categories.map((category) => [category.id, category.name]));
 }
 
+async function listAdminCategoriesFromPg(
+  client: pg.Client,
+): Promise<readonly AdminCategory[]> {
+  const result = await client.query<CategoryAdminRow>(`
+    select id, name, slug, is_active, sort_order
+    from public.categories
+    order by sort_order asc, name asc
+  `);
+
+  return result.rows.map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    isActive: category.is_active,
+  }));
+}
+
+async function hasProductShippingColumnsFromPg(
+  client: pg.Client,
+): Promise<boolean> {
+  const result = await client.query<{ count: number }>(
+    `
+      select count(*)::int as count
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'products'
+        and column_name = any($1::text[])
+    `,
+    [
+      [
+        'shipping_weight_grams',
+        'shipping_height_cm',
+        'shipping_width_cm',
+        'shipping_length_cm',
+      ],
+    ],
+  );
+
+  return result.rows[0]?.count === 4;
+}
+
+function getProductShippingSelect(hasShippingColumns: boolean): string {
+  if (hasShippingColumns) {
+    return `
+      p.shipping_weight_grams,
+      p.shipping_height_cm,
+      p.shipping_width_cm,
+      p.shipping_length_cm
+    `;
+  }
+
+  return `
+    null::integer as shipping_weight_grams,
+    null::integer as shipping_height_cm,
+    null::integer as shipping_width_cm,
+    null::integer as shipping_length_cm
+  `;
+}
+
+async function listAdminProductsFromPg(
+  client: pg.Client,
+): Promise<readonly AdminProductSummary[]> {
+  const productShippingSelect = getProductShippingSelect(
+    await hasProductShippingColumnsFromPg(client),
+  );
+  const result = await client.query<
+    ProductAdminRow & { category_name: string }
+  >(
+    `
+      select
+        p.id,
+        p.category_id,
+        p.public_product_id,
+        p.slug,
+        p.name,
+        p.status,
+        p.price_cents,
+        p.compare_at_price_cents,
+        p.pix_price_cents,
+        p.total_stock,
+        p.is_available,
+        ${productShippingSelect},
+        p.published_at::text as published_at,
+        p.updated_at::text as updated_at,
+        coalesce(c.name, 'Sem categoria') as category_name
+      from public.products p
+      left join public.categories c on c.id = p.category_id
+      order by p.updated_at desc
+    `,
+  );
+
+  return result.rows.map((product) =>
+    mapProductSummary(product, product.category_name),
+  );
+}
+
+async function getAdminProductFromPg(
+  client: pg.Client,
+  productId: string,
+): Promise<AdminProductDetail | null> {
+  const productShippingSelect = getProductShippingSelect(
+    await hasProductShippingColumnsFromPg(client),
+  );
+  const productResult = await client.query<
+    ProductAdminRow & { category_name: string }
+  >(
+    `
+      select
+        p.id,
+        p.category_id,
+        p.public_product_id,
+        p.slug,
+        p.name,
+        p.description,
+        p.status,
+        p.price_cents,
+        p.compare_at_price_cents,
+        p.pix_price_cents,
+        p.total_stock,
+        p.is_available,
+        ${productShippingSelect},
+        p.published_at::text as published_at,
+        p.updated_at::text as updated_at,
+        coalesce(c.name, 'Sem categoria') as category_name
+      from public.products p
+      left join public.categories c on c.id = p.category_id
+      where p.id = $1
+      limit 1
+    `,
+    [productId],
+  );
+  const product = productResult.rows[0];
+
+  if (!product) {
+    return null;
+  }
+
+  const [variantResult, imageResult] = await Promise.all([
+    client.query<ProductVariantAdminRow>(
+      `
+        select
+          id,
+          product_id,
+          public_variant_id,
+          sku,
+          label,
+          price_cents,
+          compare_at_price_cents,
+          pix_price_cents,
+          stock,
+          is_available,
+          image_url,
+          sort_order
+        from public.product_variants
+        where product_id = $1
+        order by sort_order asc
+      `,
+      [productId],
+    ),
+    client.query<ProductImageAdminRow>(
+      `
+        select id, product_id, variant_id, url, alt_text, sort_order, is_primary
+        from public.product_images
+        where product_id = $1
+        order by is_primary desc, sort_order asc
+      `,
+      [productId],
+    ),
+  ]);
+  const summary = mapProductSummary(product, product.category_name);
+
+  return {
+    ...summary,
+    description:
+      typeof product.description === 'string' ? product.description : '',
+    categoryId: product.category_id,
+    compareAtPriceCents: nullableInteger(
+      product.compare_at_price_cents,
+      'products.compare_at_price_cents',
+    ),
+    variants: variantResult.rows.map((variant) => ({
+      id: variant.id,
+      publicVariantId: toInteger(
+        variant.public_variant_id,
+        'product_variants.public_variant_id',
+      ),
+      sku: variant.sku,
+      label: variant.label,
+      priceCents: toInteger(
+        variant.price_cents,
+        'product_variants.price_cents',
+      ),
+      compareAtPriceCents: nullableInteger(
+        variant.compare_at_price_cents,
+        'product_variants.compare_at_price_cents',
+      ),
+      pixPriceCents: nullableInteger(
+        variant.pix_price_cents,
+        'product_variants.pix_price_cents',
+      ),
+      stock: toInteger(variant.stock, 'product_variants.stock'),
+      isAvailable: variant.is_available,
+      imageUrl: variant.image_url,
+    })),
+    images: imageResult.rows.map((image) => ({
+      id: image.id,
+      url: image.url,
+      altText: image.alt_text,
+      isPrimary: image.is_primary,
+      sortOrder: image.sort_order,
+    })),
+  };
+}
+
+async function listAdminProductBulkRowsFromPg(
+  client: pg.Client,
+): Promise<readonly BulkProductCsvExportRow[]> {
+  const [productResult, variantResult] = await Promise.all([
+    client.query<ProductAdminRow>(`
+      select
+        id,
+        category_id,
+        slug,
+        name,
+        status,
+        price_cents,
+        compare_at_price_cents,
+        pix_price_cents,
+        total_stock,
+        is_available,
+        public_product_id,
+        published_at::text as published_at,
+        updated_at::text as updated_at
+      from public.products
+      order by name asc
+    `),
+    client.query<ProductVariantAdminRow>(`
+      select
+        id,
+        product_id,
+        public_variant_id,
+        sku,
+        label,
+        price_cents,
+        compare_at_price_cents,
+        pix_price_cents,
+        stock,
+        is_available,
+        image_url,
+        sort_order
+      from public.product_variants
+      order by sort_order asc
+    `),
+  ]);
+  const variantsByProduct = new Map<string, ProductVariantAdminRow[]>();
+
+  for (const variant of variantResult.rows) {
+    const current = variantsByProduct.get(variant.product_id) ?? [];
+    current.push(variant);
+    variantsByProduct.set(variant.product_id, current);
+  }
+
+  return productResult.rows.flatMap((product) => {
+    const productVariants = variantsByProduct.get(product.id) ?? [];
+    const productPriceCents = toInteger(
+      product.price_cents,
+      'products.price_cents',
+    );
+    const productPixPriceCents = nullableInteger(
+      product.pix_price_cents,
+      'products.pix_price_cents',
+    );
+    const productCompareAtPriceCents = nullableInteger(
+      product.compare_at_price_cents,
+      'products.compare_at_price_cents',
+    );
+
+    if (productVariants.length === 0) {
+      return [
+        {
+          productId: product.id,
+          slug: product.slug,
+          name: product.name,
+          status: product.status,
+          categoryId: product.category_id,
+          priceCents: productPriceCents,
+          pixPriceCents: productPixPriceCents,
+          compareAtPriceCents: productCompareAtPriceCents,
+          variantId: '',
+          variantLabel: '',
+          variantSku: null,
+          variantPriceCents: productPriceCents,
+          variantPixPriceCents: productPixPriceCents,
+          variantCompareAtPriceCents: productCompareAtPriceCents,
+          variantStock: toInteger(product.total_stock, 'products.total_stock'),
+          variantAvailable: product.is_available,
+        },
+      ];
+    }
+
+    return productVariants.map((variant) => ({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      status: product.status,
+      categoryId: product.category_id,
+      priceCents: productPriceCents,
+      pixPriceCents: productPixPriceCents,
+      compareAtPriceCents: productCompareAtPriceCents,
+      variantId: variant.id,
+      variantLabel: variant.label,
+      variantSku: variant.sku,
+      variantPriceCents: toInteger(
+        variant.price_cents,
+        'product_variants.price_cents',
+      ),
+      variantPixPriceCents: nullableInteger(
+        variant.pix_price_cents,
+        'product_variants.pix_price_cents',
+      ),
+      variantCompareAtPriceCents: nullableInteger(
+        variant.compare_at_price_cents,
+        'product_variants.compare_at_price_cents',
+      ),
+      variantStock: toInteger(variant.stock, 'product_variants.stock'),
+      variantAvailable: variant.is_available,
+    }));
+  });
+}
+
+function mapOrderSummary(order: OrderAdminRow): AdminOrderSummary {
+  return {
+    id: order.id,
+    orderNumber: order.order_number,
+    status: order.status,
+    paymentStatus: order.payment_status,
+    subtotalCents: optionalInteger(
+      order.subtotal_cents,
+      0,
+      'orders.subtotal_cents',
+    ),
+    shippingCents: optionalInteger(
+      order.shipping_cents,
+      0,
+      'orders.shipping_cents',
+    ),
+    totalCents: toInteger(order.total_cents, 'orders.total_cents'),
+    customerName: order.customer_name ?? 'Cliente sem nome',
+    customerEmail:
+      typeof order.customer_email === 'string' ? order.customer_email : null,
+    customerPhone: order.customer_phone,
+    source: order.source,
+    createdAt: toDateText(order.placed_at ?? order.created_at),
+  };
+}
+
+async function listAdminOrdersFromPg(
+  client: pg.Client,
+): Promise<readonly AdminOrderSummary[]> {
+  const result = await client.query<OrderAdminRow>(`
+    select
+      id,
+      order_number,
+      status::text as status,
+      payment_status::text as payment_status,
+      subtotal_cents,
+      shipping_cents,
+      total_cents,
+      customer_name,
+      customer_email,
+      customer_phone,
+      admin_notes,
+      source,
+      created_at::text as created_at,
+      placed_at::text as placed_at
+    from public.orders
+    order by created_at desc
+    limit 100
+  `);
+
+  return result.rows.map(mapOrderSummary);
+}
+
+async function getAdminOrderFromPg(
+  client: pg.Client,
+  orderNumber: string,
+): Promise<AdminOrderDetail | null> {
+  const orderResult = await client.query<OrderAdminRow>(
+    `
+      select
+        id,
+        order_number,
+        status::text as status,
+        payment_status::text as payment_status,
+        subtotal_cents,
+        shipping_cents,
+        total_cents,
+        customer_name,
+        customer_email,
+        customer_phone,
+        shipping_address,
+        admin_notes,
+        source,
+        created_at::text as created_at,
+        placed_at::text as placed_at,
+        metadata
+      from public.orders
+      where order_number = $1
+      limit 1
+    `,
+    [orderNumber],
+  );
+  const order = orderResult.rows[0];
+
+  if (!order) {
+    return null;
+  }
+
+  const itemsResult = await client.query<OrderItemAdminRow>(
+    `
+      select
+        id,
+        order_id,
+        product_name,
+        variant_label,
+        unit_price_cents,
+        quantity,
+        line_total_cents
+      from public.order_items
+      where order_id = $1
+    `,
+    [order.id],
+  );
+  const shipping = mapShippingMetadata(order.metadata);
+
+  return {
+    ...mapOrderSummary(order),
+    adminNotes: typeof order.admin_notes === 'string' ? order.admin_notes : '',
+    shippingAddress: mapShippingAddress(order.shipping_address),
+    shippingQuote: shipping.quote,
+    trackingCode: shipping.trackingCode,
+    shippingLabelUrl: shipping.labelUrl,
+    items: itemsResult.rows.map((item) => ({
+      id: item.id,
+      productName: item.product_name,
+      variantLabel: item.variant_label,
+      unitPriceCents: toInteger(
+        item.unit_price_cents,
+        'order_items.unit_price_cents',
+      ),
+      quantity: toInteger(item.quantity, 'order_items.quantity'),
+      lineTotalCents: toInteger(
+        item.line_total_cents,
+        'order_items.line_total_cents',
+      ),
+    })),
+  };
+}
+
 function mapProductSummary(
   row: ProductAdminRow,
   categoryName = row.categories?.name ?? 'Sem categoria',
@@ -562,6 +1085,10 @@ function mapProductSummary(
 }
 
 export async function listAdminCategories(): Promise<readonly AdminCategory[]> {
+  if (shouldUseAdminPgClient()) {
+    return withAdminPgClient(listAdminCategoriesFromPg);
+  }
+
   const response = await createAdminClient()
     .from('categories')
     .select('id,name,slug,is_active,sort_order')
@@ -582,6 +1109,10 @@ export async function listAdminCategories(): Promise<readonly AdminCategory[]> {
 export async function listAdminProducts(): Promise<
   readonly AdminProductSummary[]
 > {
+  if (shouldUseAdminPgClient()) {
+    return withAdminPgClient(listAdminProductsFromPg);
+  }
+
   const client = createAdminClient();
   const response = await client
     .from('products')
@@ -611,6 +1142,12 @@ export async function listAdminProducts(): Promise<
 export async function getAdminProduct(
   productId: string,
 ): Promise<AdminProductDetail | null> {
+  if (shouldUseAdminPgClient()) {
+    return withAdminPgClient((client) =>
+      getAdminProductFromPg(client, productId),
+    );
+  }
+
   const client = createAdminClient();
   const initialProductResponse = await client
     .from('products')
@@ -710,6 +1247,10 @@ export async function getAdminProduct(
 export async function listAdminProductBulkRows(): Promise<
   readonly BulkProductCsvExportRow[]
 > {
+  if (shouldUseAdminPgClient()) {
+    return withAdminPgClient(listAdminProductBulkRowsFromPg);
+  }
+
   const client = createAdminClient();
   const [productResponse, variantResponse] = await Promise.all([
     client
@@ -829,6 +1370,10 @@ export async function insertAdminAuditLog(
 }
 
 export async function listAdminOrders(): Promise<readonly AdminOrderSummary[]> {
+  if (shouldUseAdminPgClient()) {
+    return withAdminPgClient(listAdminOrdersFromPg);
+  }
+
   const response = await createAdminClient()
     .from('orders')
     .select(
@@ -869,6 +1414,12 @@ export async function listAdminOrders(): Promise<readonly AdminOrderSummary[]> {
 export async function getAdminOrder(
   orderNumber: string,
 ): Promise<AdminOrderDetail | null> {
+  if (shouldUseAdminPgClient()) {
+    return withAdminPgClient((client) =>
+      getAdminOrderFromPg(client, orderNumber),
+    );
+  }
+
   const client = createAdminClient();
   const orderResponse = await client
     .from('orders')

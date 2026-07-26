@@ -2147,16 +2147,23 @@ h2 {
 }
 
 .contact-page {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
   gap: clamp(24px, 6vw, 80px);
   align-items: center;
   min-height: 68vh;
 }
 
+.contact-page > div:first-child h1 {
+  max-width: 14ch;
+  font-size: clamp(3rem, 4.8vw, 5.2rem);
+  line-height: 0.92;
+}
+
 .contact-card {
   display: grid;
-  gap: 12px;
-  padding: 24px;
+  width: 100%;
+  gap: 14px;
+  padding: 28px;
 }
 
 .contact-card .button.ghost {
