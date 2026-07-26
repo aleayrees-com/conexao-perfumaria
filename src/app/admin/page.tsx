@@ -16,6 +16,9 @@ export default async function AdminHomePage() {
   const activeProducts = products.filter(
     (product) => product.status === 'active',
   );
+  const outOfStockProducts = activeProducts.filter(
+    (product) => product.totalStock === 0,
+  );
   const pricingSummary = summarizeAdminPricing(products);
   const pendingRevenueCents = pendingOrders.reduce(
     (total, order) => total + order.totalCents,
@@ -23,30 +26,38 @@ export default async function AdminHomePage() {
   );
 
   return (
-    <section className="admin-page">
-      <div className="admin-heading">
+    <section className="admin-page admin-dashboard">
+      <div className="admin-dashboard-hero">
         <div>
           <p>Visão geral</p>
-          <h1>Painel administrativo</h1>
+          <h1>Painel da operação</h1>
+          <span>
+            Acompanhe vendas, estoque e valores em uma visão feita para o dia a
+            dia da loja.
+          </span>
         </div>
       </div>
 
       <div className="admin-metrics">
-        <article>
+        <article className="admin-kpi-card">
           <span>Produtos ativos</span>
           <strong>{activeProducts.length}</strong>
+          <small>{products.length} produtos no catálogo</small>
         </article>
-        <article>
+        <article className="admin-kpi-card attention">
           <span>Baixo estoque</span>
           <strong>{lowStockProducts.length}</strong>
+          <small>{outOfStockProducts.length} sem unidade disponível</small>
         </article>
-        <article>
+        <article className="admin-kpi-card pending">
           <span>Pedidos pendentes</span>
           <strong>{pendingOrders.length}</strong>
+          <small>{orders.length} pedidos registrados</small>
         </article>
-        <article>
+        <article className="admin-kpi-card revenue">
           <span>Receita pendente</span>
           <strong>{formatMoney(pendingRevenueCents)}</strong>
+          <small>valor aguardando confirmação</small>
         </article>
       </div>
 
@@ -86,15 +97,22 @@ export default async function AdminHomePage() {
       </section>
 
       <div className="admin-grid">
-        <section className="admin-panel">
+        <section className="admin-panel admin-list-panel">
           <div className="admin-panel-header">
-            <h2>Pedidos recentes</h2>
+            <div>
+              <p>Comercial</p>
+              <h2>Pedidos recentes</h2>
+            </div>
             <Link href="/admin/pedidos">Ver todos</Link>
           </div>
           <div className="admin-list">
             {orders.slice(0, 8).map((order) => (
-              <Link href={`/admin/pedidos/${order.orderNumber}`} key={order.id}>
-                <span>{order.orderNumber}</span>
+              <Link
+                className="admin-list-row admin-order-row"
+                href={`/admin/pedidos/${order.orderNumber}`}
+                key={order.id}
+              >
+                <span className="admin-row-code">{order.orderNumber}</span>
                 <strong>{order.customerName}</strong>
                 <small>{formatMoney(order.totalCents)}</small>
               </Link>
@@ -102,15 +120,24 @@ export default async function AdminHomePage() {
           </div>
         </section>
 
-        <section className="admin-panel">
+        <section className="admin-panel admin-list-panel">
           <div className="admin-panel-header">
-            <h2>Estoque critico</h2>
+            <div>
+              <p>Prioridade</p>
+              <h2>Estoque crítico</h2>
+            </div>
             <Link href="/admin/produtos">Ajustar</Link>
           </div>
           <div className="admin-list">
             {lowStockProducts.slice(0, 8).map((product) => (
-              <Link href={`/admin/produtos/${product.id}`} key={product.id}>
-                <span>{product.totalStock} un.</span>
+              <Link
+                className="admin-list-row admin-stock-row"
+                href={`/admin/produtos/${product.id}`}
+                key={product.id}
+              >
+                <span className="admin-stock-pill">
+                  {product.totalStock} un.
+                </span>
                 <strong>{product.name}</strong>
                 <small>{product.categoryName}</small>
               </Link>

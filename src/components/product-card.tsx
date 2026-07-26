@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ProductPaymentPrice } from '@/components/product-payment-price';
 import { ProductPurchasePanel } from '@/components/product-purchase-panel';
-import { formatMoney, getInstallmentText } from '@/lib/money';
 import { formatPortugueseDisplayText } from '@/lib/strings';
 import type { Product } from '@/types/catalog';
 
@@ -47,13 +47,11 @@ export function ProductCard({
             product.category?.name ?? 'Curadoria Conexão',
           )}
         </p>
-        <div className="price-stack">
-          <strong>{formatMoney(product.priceCents)}</strong>
-          <span>{getInstallmentText(product.priceCents)}</span>
-          {product.pixPriceCents ? (
-            <small>{formatMoney(product.pixPriceCents)} no PIX</small>
-          ) : null}
-        </div>
+        <ProductPaymentPrice
+          className="price-stack"
+          pixPriceCents={product.pixPriceCents}
+          priceCents={product.priceCents}
+        />
         {variant === 'editorial' ? (
           <Link className="product-card-link" href={productHref}>
             Comprar agora

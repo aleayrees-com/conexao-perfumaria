@@ -6,6 +6,7 @@
   --amber: #d8a84d;
   --amber-dark: #9a671c;
   --wine: #6b2386;
+  --pix-green: #237a3f;
   --moss: #426050;
   --violet-bright: #9b45bd;
   --violet-deep: #4a1263;
@@ -1129,7 +1130,7 @@ h2 {
 }
 
 .featured-section .product-card.editorial .price-stack strong {
-  color: var(--ink);
+  color: var(--wine);
   font-size: 1.85rem;
 }
 
@@ -1292,6 +1293,17 @@ h2 {
 .detail-price small {
   color: var(--ink-soft);
   font-size: 0.85rem;
+}
+
+.payment-card-price {
+  color: var(--wine);
+}
+
+.price-stack .payment-pix-price,
+.detail-price .payment-pix-price {
+  color: var(--pix-green);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .purchase-panel {
@@ -2016,16 +2028,23 @@ h2 {
 }
 
 .contact-page {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
   gap: clamp(24px, 6vw, 80px);
   align-items: center;
   min-height: 68vh;
 }
 
+.contact-page > div:first-child h1 {
+  max-width: 14ch;
+  font-size: clamp(3rem, 4.8vw, 5.2rem);
+  line-height: 0.92;
+}
+
 .contact-card {
   display: grid;
-  gap: 12px;
-  padding: 24px;
+  width: 100%;
+  gap: 14px;
+  padding: 28px;
 }
 
 .contact-card .button.ghost {
@@ -2068,6 +2087,13 @@ h2 {
 
 .site-footer .eyebrow {
   color: var(--amber-dark);
+}
+
+.site-footer-credit {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .site-footer > div:last-child {
@@ -3412,6 +3438,20 @@ body::before {
   .review-card-featured:hover {
     transform: translateY(-3px) !important;
   }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+    padding-top: 0;
+  }
+
+  .review-card-featured {
+    order: -1;
+    transform: none;
+  }
+
+  .review-card-featured:hover {
+    transform: translateY(-3px) !important;
+  }
 }
 
 @media (max-width: 620px) {
@@ -3735,6 +3775,10 @@ body::before {
   .price-stack small {
     font-size: 0.7rem;
     line-height: 1.25;
+  }
+
+  .price-stack .payment-pix-price {
+    font-size: 0.78rem;
   }
 
   .product-card-link {

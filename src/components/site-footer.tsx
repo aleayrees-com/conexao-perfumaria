@@ -6,6 +6,7 @@ export function SiteFooter() {
       <div>
         <p className="eyebrow">Conexão Perfumaria</p>
         <h2>Seu próximo perfume favorito está mais perto.</h2>
+        <p className="site-footer-credit">site feito por @alexandreayres_</p>
       </div>
       <div className="footer-links">
         <Link href="/produtos">Catálogo</Link>
