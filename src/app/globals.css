@@ -2201,6 +2201,13 @@ h2 {
   color: var(--amber-dark);
 }
 
+.site-footer-credit {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .site-footer > div:last-child {
   display: flex;
   flex-wrap: wrap;
