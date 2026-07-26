@@ -10,7 +10,7 @@ export function SiteFooter() {
       </div>
       <div className="footer-links">
         <Link href="/produtos">Catálogo</Link>
-        <Link href="/contato">Endereço da loja</Link>
+        <Link href="/contato#localizacao">Endereço da loja</Link>
         <a
           href="https://wa.me/555521981024555"
           rel="noreferrer"
