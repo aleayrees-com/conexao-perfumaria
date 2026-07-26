@@ -1,12 +1,20 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
+
 import { redirect } from 'next/navigation';
 
 import {
   createAdminClient,
+  insertAdminAuditLog,
   revalidateStorefrontCatalog,
 } from '@/lib/admin-data';
 import { requireAdmin } from '@/lib/admin-auth';
+import { resolveAdminProductReturnPath } from '@/lib/admin-pagination';
+import { calculateCardPriceCents } from '@/lib/admin-pricing';
+import { createAdminPriceUpdateIds } from '@/lib/admin-quick-prices';
+import { createCatalogSlug } from '@/lib/catalog-slug';
+import { createCatalogSku } from '@/lib/catalog-sku';
 
 function readString(formData: FormData, key: string): string {
   return String(formData.get(key) ?? '').trim();
@@ -76,17 +84,19 @@ function isMissingShippingColumnError(error: {
 export async function updateProductQuickAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const productId = readString(formData, 'productId');
   const client = createAdminClient();
   const status = readStatus(readString(formData, 'status'));
+  const pixPriceCents = readMoneyCents(formData, 'pixPrice');
   const response = await client
     .from('products')
     .update({
-      price_cents: readMoneyCents(formData, 'price'),
-      pix_price_cents: readOptionalMoneyCents(formData, 'pixPrice'),
+      price_cents: calculateCardPriceCents(pixPriceCents),
+      pix_price_cents: pixPriceCents,
       status,
+      is_available: status === 'active',
       published_at:
         status === 'active'
           ? (readNullableString(formData, 'publishedAt') ??
@@ -99,27 +109,81 @@ export async function updateProductQuickAction(
     throw new Error(response.error.message);
   }
 
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_quick_updated',
+    entityType: 'products',
+    entityId: productId,
+    metadata: { pixPriceCents, status },
+  });
   revalidateStorefrontCatalog();
-  redirect('/admin/produtos');
+  redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
+}
+
+export async function updateProductPricesAction(
+  formData: FormData,
+): Promise<void> {
+  const actor = await requireAdmin();
+
+  const productIds = createAdminPriceUpdateIds(
+    formData.getAll('dirtyProductId').map(String),
+  );
+
+  if (productIds.length === 0) {
+    redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
+  }
+
+  const client = createAdminClient();
+  const priceChanges = productIds.map((productId) => ({
+    productId,
+    pixPriceCents: readMoneyCents(formData, `pixPrice:${productId}`),
+  }));
+  const updates = await Promise.all(
+    priceChanges.map(({ productId, pixPriceCents }) => {
+      return client
+        .from('products')
+        .update({
+          price_cents: calculateCardPriceCents(pixPriceCents),
+          pix_price_cents: pixPriceCents,
+        })
+        .eq('id', productId);
+    }),
+  );
+  const failure = updates.find((update) => update.error)?.error;
+
+  if (failure) {
+    throw new Error(`Falha ao atualizar os preços: ${failure.message}`);
+  }
+
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_prices_updated',
+    entityType: 'products',
+    metadata: { priceChanges },
+  });
+  revalidateStorefrontCatalog();
+  redirect(resolveAdminProductReturnPath(readString(formData, 'returnTo')));
 }
 
 export async function updateProductDetailAction(
   formData: FormData,
 ): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const productId = readString(formData, 'productId');
   const status = readStatus(readString(formData, 'status'));
   const client = createAdminClient();
+  const pixPriceCents = readMoneyCents(formData, 'pixPrice');
   const productUpdate = {
     category_id: readNullableString(formData, 'categoryId'),
     name: readString(formData, 'name'),
     slug: readString(formData, 'slug'),
     description: readString(formData, 'description'),
     status,
-    price_cents: readMoneyCents(formData, 'price'),
+    price_cents: calculateCardPriceCents(pixPriceCents),
     compare_at_price_cents: readOptionalMoneyCents(formData, 'compareAtPrice'),
-    pix_price_cents: readOptionalMoneyCents(formData, 'pixPrice'),
+    pix_price_cents: pixPriceCents,
+    is_available: status === 'active',
     shipping_weight_grams: readPositiveInteger(
       formData,
       'shippingWeightGrams',
@@ -154,6 +218,7 @@ export async function updateProductDetailAction(
         price_cents: productUpdate.price_cents,
         compare_at_price_cents: productUpdate.compare_at_price_cents,
         pix_price_cents: productUpdate.pix_price_cents,
+        is_available: productUpdate.is_available,
         published_at: productUpdate.published_at,
       })
       .eq('id', productId);
@@ -168,16 +233,17 @@ export async function updateProductDetailAction(
   const variantIds = formData.getAll('variantId').map(String);
 
   for (const variantId of variantIds) {
+    const variantPixPriceCents = readMoneyCents(
+      formData,
+      `variantPixPrice:${variantId}`,
+    );
     const variantResponse = await client
       .from('product_variants')
       .update({
         label: readString(formData, `variantLabel:${variantId}`),
         sku: readNullableString(formData, `variantSku:${variantId}`),
-        price_cents: readMoneyCents(formData, `variantPrice:${variantId}`),
-        pix_price_cents: readOptionalMoneyCents(
-          formData,
-          `variantPixPrice:${variantId}`,
-        ),
+        price_cents: calculateCardPriceCents(variantPixPriceCents),
+        pix_price_cents: variantPixPriceCents,
         stock: readInteger(formData, `variantStock:${variantId}`),
         is_available:
           readString(formData, `variantAvailable:${variantId}`) === 'on',
@@ -190,6 +256,89 @@ export async function updateProductDetailAction(
   }
 
   await client.rpc('refresh_product_stock', { target_product_id: productId });
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_updated',
+    entityType: 'products',
+    entityId: productId,
+    metadata: {
+      name: productUpdate.name,
+      pixPriceCents,
+      status,
+      variantIds,
+    },
+  });
   revalidateStorefrontCatalog();
   redirect(`/admin/produtos/${productId}`);
+}
+
+export async function createProductAction(formData: FormData): Promise<void> {
+  const actor = await requireAdmin();
+
+  const name = readString(formData, 'name');
+
+  if (!name) {
+    throw new Error('Nome do produto vazio; informe um nome para cadastrar.');
+  }
+
+  const status = readStatus(readString(formData, 'status'));
+  const pixPriceCents = readMoneyCents(formData, 'pixPrice');
+  const stock = readInteger(formData, 'stock');
+  const client = createAdminClient();
+  const productResponse = await client
+    .from('products')
+    .insert({
+      category_id: readNullableString(formData, 'categoryId'),
+      name,
+      slug: readString(formData, 'slug') || createCatalogSlug(name),
+      description: readString(formData, 'description'),
+      status,
+      price_cents: calculateCardPriceCents(pixPriceCents),
+      pix_price_cents: pixPriceCents,
+      compare_at_price_cents: readOptionalMoneyCents(
+        formData,
+        'compareAtPrice',
+      ),
+      total_stock: stock,
+      is_available: status === 'active',
+      published_at: status === 'active' ? new Date().toISOString() : null,
+    })
+    .select('id')
+    .single();
+
+  if (productResponse.error) {
+    throw new Error(
+      `Falha ao cadastrar o produto "${name}": ${productResponse.error.message}`,
+    );
+  }
+
+  const variantResponse = await client.from('product_variants').insert({
+    product_id: productResponse.data.id,
+    label: readString(formData, 'variantLabel') || 'Padrão',
+    sku:
+      readNullableString(formData, 'sku') ??
+      createCatalogSku(name, randomUUID()),
+    price_cents: calculateCardPriceCents(pixPriceCents),
+    pix_price_cents: pixPriceCents,
+    compare_at_price_cents: readOptionalMoneyCents(formData, 'compareAtPrice'),
+    stock,
+    is_available: status === 'active',
+    sort_order: 0,
+  });
+
+  if (variantResponse.error) {
+    throw new Error(
+      `Falha ao cadastrar a variação de "${name}": ${variantResponse.error.message}`,
+    );
+  }
+
+  await insertAdminAuditLog(client, {
+    actor,
+    action: 'product_created',
+    entityType: 'products',
+    entityId: productResponse.data.id,
+    metadata: { name, status },
+  });
+  revalidateStorefrontCatalog();
+  redirect(`/admin/produtos/${productResponse.data.id}`);
 }

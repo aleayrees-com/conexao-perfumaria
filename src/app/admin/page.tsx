@@ -36,17 +36,6 @@ export default async function AdminHomePage() {
             dia da loja.
           </span>
         </div>
-        <div className="admin-heading-actions">
-          <Link
-            className="admin-primary-button"
-            href="/admin/produtos/edicao-em-massa"
-          >
-            Ajustar valores
-          </Link>
-          <Link className="admin-ghost-button" href="/admin/produtos">
-            Gerenciar produtos
-          </Link>
-        </div>
       </div>
 
       <div className="admin-metrics">
@@ -102,10 +91,7 @@ export default async function AdminHomePage() {
             className="admin-primary-button"
             href="/admin/produtos/edicao-em-massa"
           >
-            Editar vários valores
-          </Link>
-          <Link className="admin-ghost-button" href="/admin/produtos">
-            Editar produto por produto
+            Ajustar valores
           </Link>
         </div>
       </section>

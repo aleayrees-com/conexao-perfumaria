@@ -1,23 +1,27 @@
 import Link from 'next/link';
 
+import { ProductPriceTable } from '@/components/admin/product-price-table';
 import { listAdminProducts } from '@/lib/admin-data';
+import {
+  createAdminProductPageHref,
+  createAdminProductPaginationPages,
+} from '@/lib/admin-pagination';
+import {
+  createAdminProductPage,
+  resolveAdminProductSortDirection,
+  resolveAdminProductSortField,
+} from '@/lib/admin-product-page';
 import { summarizeAdminPricing } from '@/lib/admin-pricing';
 import { formatMoney } from '@/lib/money';
-
-import { updateProductQuickAction } from './actions';
 
 interface AdminProductsPageProps {
   readonly searchParams?: Promise<{
     readonly busca?: string;
+    readonly direcao?: string;
+    readonly ordem?: string;
+    readonly pagina?: string;
     readonly status?: string;
   }>;
-}
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
 }
 
 export default async function AdminProductsPage({
@@ -27,144 +31,166 @@ export default async function AdminProductsPage({
   const products = await listAdminProducts();
   const searchTerm = resolvedSearchParams?.busca ?? '';
   const statusFilter = resolvedSearchParams?.status ?? '';
+  const sortField = resolveAdminProductSortField(resolvedSearchParams?.ordem);
+  const sortDirection = resolveAdminProductSortDirection(
+    resolvedSearchParams?.direcao,
+  );
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = normalizeText(product.name).includes(
-      normalizeText(searchTerm),
-    );
     const matchesStatus = statusFilter ? product.status === statusFilter : true;
 
-    return matchesSearch && matchesStatus;
+    return matchesStatus;
   });
-  const pricingSummary = summarizeAdminPricing(filteredProducts);
+  const productPage = createAdminProductPage(filteredProducts, {
+    page: Number.parseInt(resolvedSearchParams?.pagina ?? '1', 10),
+    pageSize: 25,
+    searchTerm,
+    sortDirection,
+    sortField,
+  });
+  const pricingSummary = summarizeAdminPricing(productPage.items);
+  const paginationPages = createAdminProductPaginationPages(
+    productPage.totalPages,
+  );
+  const createPageHref = (page: number) =>
+    createAdminProductPageHref({
+      page,
+      searchTerm,
+      sortDirection,
+      sortField,
+      statusFilter,
+    });
+  const currentCatalogHref = createPageHref(productPage.page);
 
   return (
-    <section className="admin-page">
-      <div className="admin-heading">
+    <section className="admin-page admin-products-page">
+      <div className="admin-products-heading">
         <div>
-          <p>Catálogo</p>
+          <p className="admin-eyebrow">Catálogo</p>
           <h1>Produtos</h1>
+          <span>Gerencie preços, disponibilidade e estoque da sua loja.</span>
         </div>
         <div className="admin-heading-actions">
+          <Link className="admin-primary-button" href="/admin/produtos/novo">
+            Novo produto
+          </Link>
           <Link
-            className="admin-primary-button"
+            className="admin-ghost-button"
             href="/admin/produtos/edicao-em-massa"
           >
-            Ajustar valores em escala
+            Ações em massa
           </Link>
         </div>
       </div>
 
-      <section className="admin-panel admin-value-toolbar">
+      <section className="admin-product-summary">
         <div>
-          <p>Valores manuais</p>
-          <h2>Edite preço de venda, preço PIX e status sem sair do ADM.</h2>
+          <p className="admin-eyebrow">Preço da loja</p>
+          <h2>PIX é o valor principal.</h2>
+          <span>O valor do cartão é calculado automaticamente em 7,54%.</span>
         </div>
-        <div className="admin-value-toolbar-metrics">
-          <span>{filteredProducts.length} produtos filtrados</span>
-          <span>
-            Média ativa: {formatMoney(pricingSummary.averageActivePriceCents)}
-          </span>
-          <span>{pricingSummary.productsWithoutPixPrice} sem PIX</span>
-        </div>
+        <dl>
+          <div>
+            <dt>Produtos</dt>
+            <dd>{productPage.totalItems}</dd>
+          </div>
+          <div>
+            <dt>Preço médio</dt>
+            <dd>{formatMoney(pricingSummary.averageActivePriceCents)}</dd>
+          </div>
+          <div>
+            <dt>Sem PIX</dt>
+            <dd>{pricingSummary.productsWithoutPixPrice}</dd>
+          </div>
+        </dl>
       </section>
 
-      <form className="admin-filter-bar">
-        <input
-          defaultValue={searchTerm}
-          name="busca"
-          placeholder="Buscar produto"
-          type="search"
-        />
-        <select defaultValue={statusFilter} name="status">
-          <option value="">Todos os status</option>
-          <option value="active">Ativo</option>
-          <option value="draft">Rascunho</option>
-          <option value="archived">Arquivado</option>
-        </select>
+      <form className="admin-catalog-filters">
+        <input name="ordem" type="hidden" value={sortField} />
+        <input name="direcao" type="hidden" value={sortDirection} />
+        <label>
+          <span>Buscar</span>
+          <input
+            defaultValue={searchTerm}
+            name="busca"
+            placeholder="Nome, slug ou categoria"
+            type="search"
+          />
+        </label>
+        <label>
+          <span>Status</span>
+          <select defaultValue={statusFilter} name="status">
+            <option value="">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="draft">Rascunhos</option>
+            <option value="archived">Arquivados</option>
+          </select>
+        </label>
         <button className="admin-primary-button" type="submit">
-          Filtrar
+          Aplicar filtros
         </button>
       </form>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Produto</th>
-              <th>Categoria</th>
-              <th>Status</th>
-              <th>Preço</th>
-              <th>PIX</th>
-              <th>Estoque</th>
-              <th>Edição rápida</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.id}>
-                <td>
-                  <Link href={`/admin/produtos/${product.id}`}>
-                    {product.name}
-                  </Link>
-                  <small>{product.slug}</small>
-                </td>
-                <td>{product.categoryName}</td>
-                <td>
-                  <span
-                    className={`admin-status admin-status-${product.status}`}
-                  >
-                    {product.status}
-                  </span>
-                </td>
-                <td>{formatMoney(product.priceCents)}</td>
-                <td>
-                  {product.pixPriceCents
-                    ? formatMoney(product.pixPriceCents)
-                    : '-'}
-                </td>
-                <td>{product.totalStock}</td>
-                <td>
-                  <form
-                    className="admin-inline-form"
-                    action={updateProductQuickAction}
-                  >
-                    <span className="admin-inline-form-title">Valores</span>
-                    <input name="productId" type="hidden" value={product.id} />
-                    <label>
-                      Preço
-                      <input
-                        aria-label={`Preço de ${product.name}`}
-                        defaultValue={(product.priceCents / 100).toFixed(2)}
-                        name="price"
-                      />
-                    </label>
-                    <label>
-                      PIX
-                      <input
-                        aria-label={`Preço PIX de ${product.name}`}
-                        defaultValue={
-                          product.pixPriceCents
-                            ? (product.pixPriceCents / 100).toFixed(2)
-                            : ''
-                        }
-                        name="pixPrice"
-                      />
-                    </label>
-                    <select defaultValue={product.status} name="status">
-                      <option value="active">Ativo</option>
-                      <option value="draft">Rascunho</option>
-                      <option value="archived">Arquivado</option>
-                    </select>
-                    <button className="admin-ghost-button" type="submit">
-                      Salvar
-                    </button>
-                  </form>
-                </td>
-              </tr>
+      {productPage.items.length === 0 ? (
+        <div className="admin-catalog-table-wrap">
+          <p className="admin-catalog-empty">
+            Nenhum produto encontrado com estes filtros.
+          </p>
+        </div>
+      ) : (
+        <ProductPriceTable
+          products={productPage.items}
+          returnTo={currentCatalogHref}
+          sortDirection={sortDirection}
+          sortField={sortField}
+        />
+      )}
+
+      {productPage.totalPages > 1 ? (
+        <nav aria-label="Paginação de produtos" className="admin-pagination">
+          {productPage.page > 1 ? (
+            <Link
+              className="admin-pagination-boundary"
+              href={createPageHref(productPage.page - 1)}
+            >
+              Anterior
+            </Link>
+          ) : (
+            <span
+              aria-disabled="true"
+              className="admin-pagination-boundary is-disabled"
+            >
+              Anterior
+            </span>
+          )}
+          <div className="admin-pagination-pages">
+            {paginationPages.map((page) => (
+              <Link
+                aria-current={page === productPage.page ? 'page' : undefined}
+                className="admin-pagination-page"
+                href={createPageHref(page)}
+                key={page}
+              >
+                {page}
+              </Link>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
+          {productPage.page < productPage.totalPages ? (
+            <Link
+              className="admin-pagination-boundary"
+              href={createPageHref(productPage.page + 1)}
+            >
+              Próxima
+            </Link>
+          ) : (
+            <span
+              aria-disabled="true"
+              className="admin-pagination-boundary is-disabled"
+            >
+              Próxima
+            </span>
+          )}
+        </nav>
+      ) : null}
     </section>
   );
 }

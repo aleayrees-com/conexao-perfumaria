@@ -1,5 +1,7 @@
 import { listAdminCategories } from '@/lib/admin-data';
 
+import { createCategoryAction, updateCategoryAction } from './actions';
+
 export default async function AdminCategoriesPage() {
   const categories = await listAdminCategories();
 
@@ -12,6 +14,17 @@ export default async function AdminCategoriesPage() {
         </div>
       </div>
 
+      <form
+        action={createCategoryAction}
+        className="admin-panel admin-filter-bar"
+      >
+        <input name="name" placeholder="Nova categoria" required />
+        <input name="slug" placeholder="Slug (opcional)" />
+        <button className="admin-primary-button" type="submit">
+          Criar categoria
+        </button>
+      </form>
+
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -19,23 +32,46 @@ export default async function AdminCategoriesPage() {
               <th>Nome</th>
               <th>Slug</th>
               <th>Status</th>
+              <th>Ação</th>
             </tr>
           </thead>
           <tbody>
             {categories.map((category) => (
               <tr key={category.id}>
-                <td>{category.name}</td>
-                <td>{category.slug}</td>
-                <td>
-                  <span
-                    className={
-                      category.isActive
-                        ? 'admin-status admin-status-active'
-                        : 'admin-status admin-status-archived'
-                    }
+                <td colSpan={4}>
+                  <form
+                    action={updateCategoryAction}
+                    className="admin-inline-form"
                   >
-                    {category.isActive ? 'ativa' : 'inativa'}
-                  </span>
+                    <input
+                      name="categoryId"
+                      type="hidden"
+                      value={category.id}
+                    />
+                    <input
+                      aria-label={`Nome da categoria ${category.name}`}
+                      defaultValue={category.name}
+                      name="name"
+                      required
+                    />
+                    <input
+                      aria-label={`Slug da categoria ${category.name}`}
+                      defaultValue={category.slug}
+                      name="slug"
+                      required
+                    />
+                    <label className="admin-checkbox">
+                      <input
+                        defaultChecked={category.isActive}
+                        name="isActive"
+                        type="checkbox"
+                      />
+                      Ativa
+                    </label>
+                    <button className="admin-ghost-button" type="submit">
+                      Salvar
+                    </button>
+                  </form>
                 </td>
               </tr>
             ))}

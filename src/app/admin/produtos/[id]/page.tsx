@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 
+import { ProductImageManager } from '@/components/admin/product-image-manager';
+import { ProductPixPriceField } from '@/components/admin/product-pix-price-field';
 import { listAdminCategories, getAdminProduct } from '@/lib/admin-data';
+import { calculateCardPriceCents } from '@/lib/admin-pricing';
 import { formatMoney } from '@/lib/money';
 
 import { updateProductDetailAction } from '../actions';
@@ -28,6 +31,8 @@ export default async function AdminProductPage({
     notFound();
   }
 
+  const productPixPriceCents = product.pixPriceCents ?? product.priceCents;
+
   return (
     <section className="admin-page">
       <div className="admin-heading">
@@ -44,10 +49,8 @@ export default async function AdminProductPage({
           <div>
             <p>Valores atuais</p>
             <h2>
-              Venda: {formatMoney(product.priceCents)} · PIX:{' '}
-              {product.pixPriceCents === null
-                ? 'sem preço'
-                : formatMoney(product.pixPriceCents)}
+              PIX: {formatMoney(productPixPriceCents)} · Cartão:{' '}
+              {formatMoney(calculateCardPriceCents(productPixPriceCents))}
             </h2>
           </div>
           <span>{product.totalStock} unidades em estoque</span>
@@ -100,29 +103,22 @@ export default async function AdminProductPage({
           <div className="admin-panel-header">
             <div>
               <h2>Valores de venda</h2>
-              <p>Campos usados na loja, no checkout e nas campanhas.</p>
+              <p>
+                O PIX é editável; o cartão é atualizado em 7,54%
+                automaticamente.
+              </p>
             </div>
           </div>
           <div className="admin-form-grid">
-            <label>
-              Preço de venda
-              <input
-                name="price"
-                defaultValue={centsToInput(product.priceCents)}
-              />
-            </label>
+            <ProductPixPriceField
+              defaultPixPriceCents={productPixPriceCents}
+              inputName="pixPrice"
+            />
             <label>
               Preço de comparação
               <input
                 name="compareAtPrice"
                 defaultValue={centsToInput(product.compareAtPriceCents)}
-              />
-            </label>
-            <label>
-              Preço PIX
-              <input
-                name="pixPrice"
-                defaultValue={centsToInput(product.pixPriceCents)}
               />
             </label>
             <label>
@@ -193,78 +189,52 @@ export default async function AdminProductPage({
             </div>
           </div>
           <div className="admin-variant-list">
-            {product.variants.map((variant) => (
-              <fieldset key={variant.id}>
-                <input name="variantId" type="hidden" value={variant.id} />
-                <legend>{variant.label}</legend>
-                <label>
-                  Rotulo
-                  <input
-                    name={`variantLabel:${variant.id}`}
-                    defaultValue={variant.label}
-                  />
-                </label>
-                <label>
-                  SKU
-                  <input
-                    name={`variantSku:${variant.id}`}
-                    defaultValue={variant.sku ?? ''}
-                  />
-                </label>
-                <label>
-                  Preço
-                  <input
-                    name={`variantPrice:${variant.id}`}
-                    defaultValue={centsToInput(variant.priceCents)}
-                  />
-                </label>
-                <label>
-                  Preço PIX
-                  <input
-                    name={`variantPixPrice:${variant.id}`}
-                    defaultValue={centsToInput(variant.pixPriceCents)}
-                  />
-                </label>
-                <label>
-                  Estoque
-                  <input
-                    min={0}
-                    name={`variantStock:${variant.id}`}
-                    type="number"
-                    defaultValue={variant.stock}
-                  />
-                </label>
-                <label className="admin-checkbox">
-                  <input
-                    name={`variantAvailable:${variant.id}`}
-                    type="checkbox"
-                    defaultChecked={variant.isAvailable}
-                  />
-                  Disponível
-                </label>
-              </fieldset>
-            ))}
-          </div>
-        </section>
+            {product.variants.map((variant) => {
+              const variantPixPriceCents =
+                variant.pixPriceCents ?? variant.priceCents;
 
-        <section className="admin-panel">
-          <div className="admin-panel-header">
-            <h2>Imagens</h2>
-          </div>
-          <div className="admin-image-grid">
-            {product.images.map((image) => (
-              <a
-                href={image.url}
-                key={image.id}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <span>
-                  {image.isPrimary ? 'Principal' : `#${image.sortOrder}`}
-                </span>
-                <small>{image.altText ?? image.url}</small>
-              </a>
-            ))}
+              return (
+                <fieldset key={variant.id}>
+                  <input name="variantId" type="hidden" value={variant.id} />
+                  <legend>{variant.label}</legend>
+                  <label>
+                    Rotulo
+                    <input
+                      name={`variantLabel:${variant.id}`}
+                      defaultValue={variant.label}
+                    />
+                  </label>
+                  <label>
+                    SKU
+                    <input
+                      name={`variantSku:${variant.id}`}
+                      defaultValue={variant.sku ?? ''}
+                    />
+                  </label>
+                  <ProductPixPriceField
+                    defaultPixPriceCents={variantPixPriceCents}
+                    inputName={`variantPixPrice:${variant.id}`}
+                  />
+                  <label>
+                    Estoque
+                    <input
+                      min={0}
+                      name={`variantStock:${variant.id}`}
+                      type="number"
+                      defaultValue={variant.stock}
+                    />
+                  </label>
+                  <label className="admin-checkbox">
+                    <input
+                      name={`variantAvailable:${variant.id}`}
+                      type="checkbox"
+                      defaultChecked={variant.isAvailable}
+                    />
+                    Disponível
+                  </label>
+                </fieldset>
+              );
+            })}
           </div>
         </section>
 
@@ -274,6 +244,8 @@ export default async function AdminProductPage({
           </button>
         </div>
       </form>
+
+      <ProductImageManager images={product.images} productId={product.id} />
     </section>
   );
 }

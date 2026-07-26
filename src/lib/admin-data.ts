@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import pg from 'pg';
 
+import type { AdminRole } from '@/lib/admin-access';
 import type { BulkProductCsvExportRow } from '@/lib/admin-product-bulk';
 import {
   isSupabaseAdminEnvConfigured,
@@ -77,6 +78,16 @@ interface AdminAuditLogRow extends Record<string, unknown> {
   readonly entity_id: string | null;
   readonly metadata: Record<string, unknown>;
   readonly created_at: string;
+}
+
+interface AdminProfileRow extends Record<string, unknown> {
+  readonly id: string;
+  readonly email: string;
+  readonly display_name: string;
+  readonly role: AdminRole;
+  readonly is_active: boolean;
+  readonly created_at: string;
+  readonly updated_at: string;
 }
 
 interface OrderAdminRow extends Record<string, unknown> {
@@ -180,6 +191,12 @@ interface AdminDatabase {
         Update: Partial<AdminAuditLogRow>;
         Relationships: [];
       };
+      admin_profiles: {
+        Row: AdminProfileRow;
+        Insert: Partial<AdminProfileRow>;
+        Update: Partial<AdminProfileRow>;
+        Relationships: [];
+      };
       orders: {
         Row: OrderAdminRow;
         Insert: Partial<OrderAdminRow>;
@@ -245,6 +262,21 @@ export interface AdminCategory {
   readonly name: string;
   readonly slug: string;
   readonly isActive: boolean;
+}
+
+export interface AdminProfile {
+  readonly id: string;
+  readonly authUserId: string | null;
+  readonly email: string;
+  readonly displayName: string;
+  readonly role: AdminRole;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+}
+
+export interface AdminAuditActor {
+  readonly email: string;
+  readonly displayName: string;
 }
 
 export interface AdminProductSummary {
@@ -319,6 +351,15 @@ export interface AdminOrderDetail extends AdminOrderSummary {
   readonly trackingCode: string | null;
   readonly shippingLabelUrl: string | null;
   readonly items: readonly AdminOrderItem[];
+}
+
+export interface AdminCustomerSummary {
+  readonly id: string;
+  readonly name: string;
+  readonly email: string | null;
+  readonly phone: string | null;
+  readonly marketingOptIn: boolean;
+  readonly createdAt: string;
 }
 
 export interface AdminOrderShippingAddress {
@@ -1084,6 +1125,119 @@ function mapProductSummary(
   };
 }
 
+function normalizeAdminEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function mapAdminProfile(row: AdminProfileRow): AdminProfile {
+  return {
+    id: row.id,
+    authUserId: row.id,
+    email: row.email,
+    displayName: row.display_name,
+    role: row.role,
+    isActive: row.is_active,
+    createdAt: row.created_at,
+  };
+}
+
+export async function findAdminProfileByEmail(
+  client: AdminClient,
+  email: string,
+): Promise<AdminProfile | null> {
+  const response = await client
+    .from('admin_profiles')
+    .select('id,email,display_name,role,is_active,created_at,updated_at')
+    .eq('email', normalizeAdminEmail(email))
+    .maybeSingle();
+  const profile = assertSupabaseSuccess(
+    response,
+    `Falha ao localizar o acesso administrativo "${email}"`,
+  );
+
+  return profile ? mapAdminProfile(profile) : null;
+}
+
+export async function countAdminProfiles(client: AdminClient): Promise<number> {
+  const response = await client
+    .from('admin_profiles')
+    .select('id', { count: 'exact', head: true });
+
+  if (response.error) {
+    throw new Error(
+      `Falha ao contar acessos administrativos: ${response.error.message}`,
+    );
+  }
+
+  return response.count ?? 0;
+}
+
+export async function listAdminProfiles(): Promise<readonly AdminProfile[]> {
+  const response = await createAdminClient()
+    .from('admin_profiles')
+    .select('id,email,display_name,role,is_active,created_at,updated_at')
+    .order('display_name', { ascending: true });
+  const profiles = assertSupabaseSuccess(
+    response,
+    'Falha ao listar acessos administrativos',
+  );
+
+  return (profiles ?? []).map(mapAdminProfile);
+}
+
+export async function createAdminProfile(
+  client: AdminClient,
+  input: Omit<AdminProfile, 'id' | 'createdAt' | 'authUserId'> & {
+    readonly authUserId: string;
+  },
+): Promise<AdminProfile> {
+  const response = await client
+    .from('admin_profiles')
+    .insert({
+      // Sharing the Auth UUID prevents a second identity mapping from drifting.
+      id: input.authUserId,
+      email: normalizeAdminEmail(input.email),
+      display_name: input.displayName,
+      role: input.role,
+      is_active: input.isActive,
+    })
+    .select('id,email,display_name,role,is_active,created_at,updated_at')
+    .single();
+  const profile = assertSupabaseSuccess(
+    response,
+    `Falha ao criar o acesso administrativo "${input.email}"`,
+  );
+
+  if (!profile) {
+    throw new Error(
+      `Perfil administrativo "${input.email}" não retornou após a criação.`,
+    );
+  }
+
+  return mapAdminProfile(profile);
+}
+
+export async function setAdminProfileActivity(
+  client: AdminClient,
+  email: string,
+  isActive: boolean,
+): Promise<AdminProfile | null> {
+  const response = await client
+    .from('admin_profiles')
+    .update({ is_active: isActive })
+    .eq('email', normalizeAdminEmail(email))
+    .select('id,email,display_name,role,is_active,created_at,updated_at')
+    .maybeSingle();
+
+  if (response.error) {
+    throw new Error(
+      `Falha ao atualizar o acesso "${email}": ${response.error.message}`,
+    );
+  }
+
+  return response.data ? mapAdminProfile(response.data) : null;
+}
+
 export async function listAdminCategories(): Promise<readonly AdminCategory[]> {
   if (shouldUseAdminPgClient()) {
     return withAdminPgClient(listAdminCategoriesFromPg);
@@ -1350,6 +1504,7 @@ export async function listAdminProductBulkRows(): Promise<
 export async function insertAdminAuditLog(
   client: AdminClient,
   input: {
+    readonly actor: AdminAuditActor;
     readonly action: string;
     readonly entityType: string;
     readonly entityId?: string | null;
@@ -1357,11 +1512,14 @@ export async function insertAdminAuditLog(
   },
 ): Promise<void> {
   const response = await client.from('admin_audit_logs').insert({
-    actor_email: 'admin',
+    actor_email: input.actor.email,
     action: input.action,
     entity_type: input.entityType,
     entity_id: input.entityId ?? null,
-    metadata: input.metadata,
+    metadata: {
+      ...input.metadata,
+      actorName: input.actor.displayName,
+    },
   });
 
   if (response.error) {
@@ -1408,6 +1566,26 @@ export async function listAdminOrders(): Promise<readonly AdminOrderSummary[]> {
     adminNotes: typeof order.admin_notes === 'string' ? order.admin_notes : '',
     source: order.source,
     createdAt: order.placed_at ?? order.created_at,
+  }));
+}
+
+export async function listAdminCustomers(): Promise<
+  readonly AdminCustomerSummary[]
+> {
+  const response = await createAdminClient()
+    .from('customers')
+    .select('id,name,email,phone,marketing_opt_in,created_at')
+    .order('name', { ascending: true });
+  const customers =
+    assertSupabaseSuccess(response, 'Falha ao listar clientes') ?? [];
+
+  return customers.map((customer) => ({
+    id: customer.id,
+    name: customer.name,
+    email: customer.email,
+    phone: customer.phone,
+    marketingOptIn: customer.marketing_opt_in,
+    createdAt: customer.created_at,
   }));
 }
 

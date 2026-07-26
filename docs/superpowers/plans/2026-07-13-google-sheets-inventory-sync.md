@@ -4,9 +4,18 @@
 
 **Goal:** Synchronize the native Google Sheet inventory into Supabase every five minutes without changing storefront code.
 
-**Architecture:** A Supabase Edge Function fetches and validates the fixed `Produtos` CSV export, then calls one transactional PostgreSQL RPC. Supabase Cron invokes the function every five minutes using a service-role credential stored in Vault; the Cron remains disabled until a reviewed dry run and one verified live run succeed.
+**Architecture:** PostgreSQL fetches and validates the fixed `Produtos` CSV export through the `http` extension, then calls one transactional RPC. Supabase Cron invokes the database function directly every five minutes; activation follows a reviewed dry run and one verified live run.
 
-**Tech Stack:** TypeScript 5.9, Vitest, Supabase Edge Functions, PostgreSQL/PLpgSQL, Supabase Cron (`pg_cron`), `pg_net`, Vault.
+**Tech Stack:** TypeScript 5.9, Vitest, PostgreSQL/PLpgSQL, PostgreSQL `http`, and Supabase Cron (`pg_cron`).
+
+## Execution outcome
+
+The Edge Function deployment was unavailable to the current Supabase account (`403`). Production already provided the synchronous PostgreSQL `http` extension, so the final implementation supersedes the Edge/Vault steps below with two additive migrations:
+
+- `20260713190000_inventory_sheet_postgres_cron.sql` fetches the fixed Google Sheets CSV directly and schedules the database function every five minutes.
+- `20260713191000_inventory_sheet_slug_fallback.sql` handles 10 sheet rows whose Nuvemshop IDs changed by using `Link do produto` only when its slug resolves to exactly one existing variant.
+
+The final production verification read 411 rows, applied 35 stock differences, produced a zero-difference follow-up dry run, and recorded a successful automatic Cron execution. The original task breakdown remains below as implementation history; no Edge Function is part of the final runtime.
 
 ## Global Constraints
 
@@ -36,10 +45,12 @@
 ### Task 1: Parse and validate the live inventory CSV
 
 **Files:**
+
 - Create: `supabase/functions/_shared/inventory-sheet.ts`
 - Create: `src/lib/inventory-sheet.test.ts`
 
 **Interfaces:**
+
 - Produces: `parseInventoryCsv(csv: string): InventorySnapshot`
 - Produces: `InventoryRow { readonly nuvemshopVariantId: number; readonly stock: number; readonly sourceRow: number }`
 - Produces: `InventorySheetError extends Error`
@@ -139,10 +150,12 @@ git commit -m "feat: validate inventory sheet csv"
 ### Task 2: Add the atomic inventory synchronization RPC
 
 **Files:**
+
 - Create: `supabase/migrations/20260713170000_inventory_sheet_sync.sql`
 - Create: `src/lib/inventory-sync-migration.test.ts`
 
 **Interfaces:**
+
 - Consumes: JSON array entries `{ "nuvemshopVariantId": number, "stock": number }`
 - Produces: `public.sync_inventory_snapshot(inventory_rows jsonb, dry_run boolean)` returning one JSONB summary.
 - Produces: `public.inventory_sync_runs` for operational logs.
@@ -155,8 +168,10 @@ Read the migration with `node:fs/promises` and assert the exact contracts:
 ```ts
 expect(sql).toContain('create table if not exists public.inventory_sync_runs');
 expect(sql).toContain('pg_try_advisory_xact_lock');
-expect(sql).toContain('create or replace function public.sync_inventory_snapshot');
-expect(sql).toContain("cron.schedule(");
+expect(sql).toContain(
+  'create or replace function public.sync_inventory_snapshot',
+);
+expect(sql).toContain('cron.schedule(');
 expect(sql).toContain("'*/5 * * * *'");
 expect(sql).toContain('vault.decrypted_secrets');
 expect(sql).toContain('revoke all on function public.sync_inventory_snapshot');
@@ -216,11 +231,13 @@ git commit -m "feat: add atomic inventory sync rpc"
 ### Task 3: Add the Edge Function with dry-run and audit logging
 
 **Files:**
+
 - Create: `supabase/functions/_shared/inventory-handler.ts`
 - Create: `supabase/functions/sync-inventory/index.ts`
 - Create: `src/lib/inventory-handler.test.ts`
 
 **Interfaces:**
+
 - Consumes: `parseInventoryCsv` from Task 1.
 - Consumes: RPC `sync_inventory_snapshot` from Task 2.
 - Produces: `createInventorySyncHandler(dependencies): (request: Request) => Promise<Response>`.
@@ -253,7 +270,11 @@ const response = await handler(
     body: JSON.stringify({ dryRun: true }),
   }),
 );
-expect(await response.json()).toMatchObject({ ok: true, dryRun: true, changed: 1 });
+expect(await response.json()).toMatchObject({
+  ok: true,
+  dryRun: true,
+  changed: 1,
+});
 ```
 
 Also cover GET/invalid method, malformed JSON, fetch error, wrong content type, parser error, RPC error, success logging, error logging, and secret-free error responses.
@@ -284,14 +305,20 @@ export function createInventorySyncHandler(
 ): (request: Request) => Promise<Response> {
   return async (request) => {
     if (request.method !== 'POST') {
-      return Response.json({ ok: false, error: 'Método não permitido.' }, { status: 405 });
+      return Response.json(
+        { ok: false, error: 'Método não permitido.' },
+        { status: 405 },
+      );
     }
     const { dryRun } = await readRequestBody(request);
     const runId = await dependencies.runs.start(dryRun);
 
     try {
       const csvResponse = await dependencies.fetchCsv(dependencies.sheetCsvUrl);
-      if (!csvResponse.ok || !csvResponse.contentType.toLowerCase().includes('text/csv')) {
+      if (
+        !csvResponse.ok ||
+        !csvResponse.contentType.toLowerCase().includes('text/csv')
+      ) {
         throw new Error('Falha ao baixar o CSV de estoque.');
       }
       const snapshot = parseInventoryCsv(csvResponse.text);
@@ -348,9 +375,11 @@ git commit -m "feat: add scheduled inventory edge function"
 ### Task 4: Verify locally, apply the migration, and perform a guarded rollout
 
 **Files:**
+
 - Modify: `supabase/README.md`
 
 **Interfaces:**
+
 - Applies `supabase/migrations/20260713170000_inventory_sheet_sync.sql` through the existing migration runner and configured `SUPABASE_DB_URL`.
 - Produces exact Dashboard/CLI instructions for deploying `supabase/functions/sync-inventory` if CLI authentication is unavailable.
 - Keeps Cron disabled until dry-run and live verification pass.

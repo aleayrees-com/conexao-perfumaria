@@ -15,6 +15,22 @@ export interface AdminPricingSummary {
   readonly productsWithoutPixPrice: number;
 }
 
+const CARD_PRICE_MARKUP_BASIS_POINTS = 754;
+const BASIS_POINTS_SCALE = 10_000;
+
+export function calculateCardPriceCents(pixPriceCents: number): number {
+  if (!Number.isInteger(pixPriceCents) || pixPriceCents < 0) {
+    throw new Error(
+      `PIX price cents "${pixPriceCents}" must be a non-negative integer.`,
+    );
+  }
+
+  return Math.round(
+    (pixPriceCents * (BASIS_POINTS_SCALE + CARD_PRICE_MARKUP_BASIS_POINTS)) /
+      BASIS_POINTS_SCALE,
+  );
+}
+
 export function summarizeAdminPricing(
   products: readonly AdminPricingProduct[],
 ): AdminPricingSummary {
