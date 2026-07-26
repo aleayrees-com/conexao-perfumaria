@@ -10,3 +10,9 @@ it('credits Alexandre Ayres in the footer', () => {
 
   expect(markup).toContain('site feito por @alexandreayres_');
 });
+
+it('takes the store address link to the contact map', () => {
+  const markup = renderToStaticMarkup(createElement(SiteFooter));
+
+  expect(markup).toContain('href="/contato#localizacao">Endereço da loja');
+});
