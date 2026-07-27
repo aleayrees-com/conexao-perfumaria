@@ -179,8 +179,8 @@ export default async function HomePage() {
     },
     {
       id: 'kits',
-      title: 'Kits para Presentear',
-      href: '/produtos?busca=kit',
+      title: 'Combos e kits',
+      href: '/combos',
       label: 'Prontos para surpreender',
       image: '/brand/category-cutouts/kits.png',
     },
