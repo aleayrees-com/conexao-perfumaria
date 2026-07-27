@@ -8,6 +8,14 @@ function isSkuOnlyProduct(product: Product): boolean {
   return product.catalogVisibility === 'sku_only';
 }
 
+function isComboProduct(product: Product): boolean {
+  const productText = [product.name, product.category?.name ?? '']
+    .join(' ')
+    .toLocaleLowerCase('pt-BR');
+
+  return /\b(combo|kit)s?\b/.test(productText);
+}
+
 function productHasExactSku(product: Product, query: string): boolean {
   return product.variants.some(
     (variant) =>
@@ -81,6 +89,20 @@ export function searchProducts(
 
     return text.includes(query);
   });
+}
+
+/**
+ * Groups catalog items sold as ready-to-gift combinations.
+ *
+ * @example
+ * selectComboProducts(products).map((product) => product.slug);
+ */
+export function selectComboProducts(
+  products: readonly Product[],
+): readonly Product[] {
+  return products.filter(
+    (product) => !isSkuOnlyProduct(product) && isComboProduct(product),
+  );
 }
 
 export function filterCatalogProducts(

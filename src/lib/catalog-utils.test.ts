@@ -2,6 +2,7 @@ import {
   buildCategorySummaries,
   filterCatalogProducts,
   searchProducts,
+  selectComboProducts,
   sortFeaturedProducts,
 } from '@/lib/catalog-utils';
 import type { Product } from '@/types/catalog';
@@ -130,6 +131,35 @@ describe('catalog utils', () => {
         productCount: 1,
         availableCount: 0,
       },
+    ]);
+  });
+
+  it('groups kits, combos and the Combo Presente category together', () => {
+    const comboProducts = [
+      {
+        ...products[0],
+        slug: 'kit-pure-seduction',
+        name: 'Kits Pure Seduction',
+      },
+      {
+        ...products[1],
+        slug: 'presente-combinado',
+        name: 'Presente perfumado',
+        category: {
+          name: 'Combo Presente',
+          slug: 'combo-presente',
+          url: 'https://example.com/combos',
+        },
+      },
+      {
+        ...products[1],
+        slug: 'body-splash',
+      },
+    ];
+
+    expect(selectComboProducts(comboProducts).map((product) => product.slug)).toEqual([
+      'kit-pure-seduction',
+      'presente-combinado',
     ]);
   });
 
