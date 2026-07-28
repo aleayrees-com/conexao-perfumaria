@@ -4,8 +4,8 @@ import { getProducts } from '@/lib/catalog';
 import { selectComboProducts } from '@/lib/catalog-utils';
 
 export const metadata = {
-  title: 'Kits e presentes',
-  description: 'Kits e combos da Conexão Perfumaria para presentear.',
+  title: 'Kits para Presentes',
+  description: 'Kits da Conexão Perfumaria para presentear.',
 };
 
 export const revalidate = 60;
@@ -16,7 +16,7 @@ export default async function CombosPage() {
 
   return (
     <PageShell>
-      <PageHeading eyebrow="Seleção especial" title="Kits e presentes">
+      <PageHeading eyebrow="Seleção especial" title="Kits para Presentes">
         <p>
           {products.length} opções para presentear, com {availableCount} em
           pronta entrega.

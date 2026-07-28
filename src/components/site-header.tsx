@@ -46,7 +46,7 @@ export function SiteHeader() {
         <Link href="/categoria/hidrat-isabelle-la-belle">Hidratantes</Link>
         <Link href="/produtos?busca=victoria">Victoria&apos;s Secret</Link>
         <Link href="/contato">Como Comprar</Link>
-        <Link href="/combos">KITS E PRESENTES</Link>
+        <Link href="/combos">Kits para Presentes</Link>
       </nav>
     </div>
   );
