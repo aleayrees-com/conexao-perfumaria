@@ -179,7 +179,7 @@ export default async function HomePage() {
     },
     {
       id: 'kits',
-      title: 'Kits e presentes',
+      title: 'Kits para Presentes',
       href: '/combos',
       label: 'Prontos para surpreender',
       image: '/brand/category-cutouts/kits.png',
